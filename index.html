@@ -4,23 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Ledger" />
-  <title>Ledger · Personal Expense Tracker</title>
+  <meta name="apple-mobile-web-app-title" content="Welcome！Jeff" />
+  <title>Welcome！Jeff · Personal Expense Tracker</title>
 
-  <!-- Inline Neon Green & Black App Icon (works on iOS Home Screen & Browser Tab) -->
-  <link
-    id="appIconLink"
-    rel="icon"
-    type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000000'/%3E%3Crect x='14' y='14' width='152' height='152' rx='30' fill='none' stroke='%2330d158' stroke-opacity='0.35' stroke-width='3'/%3E%3Ccircle cx='90' cy='86' r='44' fill='%2330d158' fill-opacity='0.14'/%3E%3Cpath d='M90 54v64M58 86h64' stroke='%2330d158' stroke-width='12' stroke-linecap='round'/%3E%3Ctext x='90' y='152' text-anchor='middle' fill='%23ffffff' font-family='-apple-system,sans-serif' font-size='18' font-weight='700' letter-spacing='2'%3ERM%3C/text%3E%3C/svg%3E"
-  />
-  <link
-    id="appleTouchIconLink"
-    rel="apple-touch-icon"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23000000'/%3E%3Crect x='14' y='14' width='152' height='152' rx='30' fill='none' stroke='%2330d158' stroke-opacity='0.35' stroke-width='3'/%3E%3Ccircle cx='90' cy='86' r='44' fill='%2330d158' fill-opacity='0.14'/%3E%3Cpath d='M90 54v64M58 86h64' stroke='%2330d158' stroke-width='12' stroke-linecap='round'/%3E%3Ctext x='90' y='152' text-anchor='middle' fill='%23ffffff' font-family='-apple-system,sans-serif' font-size='18' font-weight='700' letter-spacing='2'%3ERM%3C/text%3E%3C/svg%3E"
-  />
+  <link id="faviconPng" rel="icon" type="image/png" sizes="180x180" href="" />
+  <link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
 
   <style>
     :root {
@@ -95,9 +86,10 @@
     }
 
     .brand p {
-      margin: 2px 0 0;
-      font-size: 12px;
-      color: var(--text-muted);
+      margin: 1px 0 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent-green);
     }
 
     .header-actions {
@@ -189,6 +181,24 @@
       font-size: 13px;
     }
 
+    .fund-edit-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .fund-edit-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: underline;
+    }
+
     .mom-badge {
       display: inline-flex;
       align-items: center;
@@ -260,7 +270,6 @@
       color: #000000;
     }
 
-    /* Glowing Add Button */
     .btn-glow {
       background: var(--accent-green);
       color: #000000;
@@ -518,8 +527,8 @@
           </svg>
         </div>
         <div class="brand">
-          <h1>Ledger</h1>
-          <p id="subtitleText">Personal RM Tracker · Initial Fund &amp; PWA</p>
+          <h1>Welcome！</h1>
+          <p>Jeff</p>
         </div>
       </div>
       <div class="header-actions">
@@ -541,10 +550,11 @@
         </div>
 
         <div class="fund-strip">
-          <div>
+          <button type="button" class="fund-edit-btn" id="inlineEditFundBtn" title="Tap to edit Initial Fund">
             <span class="muted">Initial Fund:</span>
             <strong id="dashInitialFund" class="green">RM 0.00</strong>
-          </div>
+            <span class="fund-edit-hint">Edit</span>
+          </button>
           <div>
             <span class="muted">Total Cash:</span>
             <strong id="dashTotalCash">RM 0.00</strong>
@@ -729,7 +739,7 @@
 
       <div class="form-grid">
         <div>
-          <label class="label-muted">Initial Fund (Starting Cash in RM)</label>
+          <label class="label-muted" for="initialFundInput">Initial Fund (Starting Cash in RM)</label>
           <div style="display: flex; gap: 8px; margin-top: 6px;">
             <input type="number" id="initialFundInput" step="0.01" min="0" placeholder="0.00" />
             <button type="button" class="btn btn-glow" id="saveInitialFundBtn" style="white-space: nowrap;">Save</button>
@@ -737,15 +747,15 @@
         </div>
 
         <div class="row-2">
-          <button class="btn btn-ghost" id="exportJsonBtn">Export JSON</button>
-          <button class="btn btn-ghost" id="exportCsvBtn">Export CSV</button>
+          <button type="button" class="btn btn-ghost" id="exportJsonBtn">Export JSON</button>
+          <button type="button" class="btn btn-ghost" id="exportCsvBtn">Export CSV</button>
         </div>
         <label class="btn btn-ghost" style="text-align: center;">
           Import JSON Backup
           <input type="file" id="importJsonInput" accept="application/json" class="hidden" />
         </label>
-        <button class="btn btn-green" id="runSelfTestBtn">Run Logic Self-Test</button>
-        <button class="btn btn-ghost" id="resetDemoBtn" style="color: var(--accent-red);">Reset to Sample Data</button>
+        <button type="button" class="btn btn-green" id="runSelfTestBtn">Run Logic Self-Test</button>
+        <button type="button" class="btn btn-ghost" id="resetDemoBtn" style="color: var(--accent-red);">Reset to Sample Data</button>
 
         <div>
           <div class="label-muted" style="margin-bottom: 6px;">Apple Shortcuts URL Template</div>
@@ -761,7 +771,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "apple_minimal_rm_tracker_v2";
+    const STORAGE_KEY = "apple_minimal_rm_tracker_v3";
 
     const EXPENSE_CATEGORIES = [
       "Food & Beverage",
@@ -784,6 +794,56 @@
       "Side Hustle",
       "Other Income"
     ];
+
+    function generatePngAppIconDataUrl() {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 180;
+        canvas.height = 180;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return "";
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, 180, 180);
+
+        ctx.strokeStyle = "rgba(48, 209, 88, 0.45)";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(12, 12, 156, 156);
+
+        ctx.fillStyle = "rgba(48, 209, 88, 0.16)";
+        ctx.beginPath();
+        ctx.arc(90, 84, 42, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = "#30d158";
+        ctx.lineWidth = 12;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(90, 52);
+        ctx.lineTo(90, 116);
+        ctx.moveTo(58, 84);
+        ctx.lineTo(122, 84);
+        ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "700 18px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("JEFF · RM", 90, 152);
+
+        return canvas.toDataURL("image/png");
+      } catch {
+        return "";
+      }
+    }
+
+    function applyPngAppIcons() {
+      const pngUrl = generatePngAppIconDataUrl();
+      if (!pngUrl) return;
+      const fav = document.getElementById("faviconPng");
+      const apple = document.getElementById("appleTouchIconPng");
+      if (fav) fav.href = pngUrl;
+      if (apple) apple.href = pngUrl;
+    }
 
     function todayISO() {
       return new Date().toISOString().slice(0, 10);
@@ -829,7 +889,7 @@
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("apple_minimal_rm_tracker_v2");
         if (!raw) return getDefaultState();
         const parsed = JSON.parse(raw);
         return {
@@ -1129,6 +1189,20 @@
         `${baseUrl}?type=expense&amount=18.50&category=Food%20%26%20Beverage&note=Lunch&work=0`;
     }
 
+    function openSettingsModalAndFocusFund() {
+      document.getElementById("initialFundInput").value = state.initialFund;
+      document.getElementById("settingsModal").classList.add("open");
+      setTimeout(() => document.getElementById("initialFundInput").focus(), 60);
+    }
+
+    function commitInitialFund() {
+      const rawVal = document.getElementById("initialFundInput").value;
+      const val = parseFloat(rawVal);
+      state.initialFund = Number.isFinite(val) && val >= 0 ? val : 0;
+      renderAll();
+      document.getElementById("settingsModal").classList.remove("open");
+    }
+
     window.handlePayPlanned = function(id) {
       const idx = state.planned.findIndex(p => p.id === id);
       if (idx === -1 || state.planned[idx].paid) return;
@@ -1211,6 +1285,9 @@
       });
       assert(cash === 1300, "Initial fund + income - expense calculates total cash accurately");
 
+      const pngIcon = generatePngAppIconDataUrl();
+      assert(pngIcon.startsWith("data:image/png"), "PNG app icon data URL generated for iOS Home Screen");
+
       const outWrap = document.getElementById("selfTestOutputWrap");
       const outEl = document.getElementById("selfTestOutput");
       outWrap.classList.remove("hidden");
@@ -1224,6 +1301,7 @@
 
     document.getElementById("quickAddBtn").addEventListener("click", () => switchTab("log"));
     document.getElementById("fabAddBtn").addEventListener("click", () => switchTab("log"));
+    document.getElementById("inlineEditFundBtn").addEventListener("click", openSettingsModalAndFocusFund);
 
     document.getElementById("monthSelect").addEventListener("change", (e) => {
       selectedMonth = e.target.value;
@@ -1327,20 +1405,18 @@
       renderAll();
     });
 
-    document.getElementById("openSettingsBtn").addEventListener("click", () => {
-      document.getElementById("initialFundInput").value = state.initialFund;
-      document.getElementById("settingsModal").classList.add("open");
-    });
+    document.getElementById("openSettingsBtn").addEventListener("click", openSettingsModalAndFocusFund);
 
     document.getElementById("closeSettingsModal").addEventListener("click", () => {
       document.getElementById("settingsModal").classList.remove("open");
     });
 
-    document.getElementById("saveInitialFundBtn").addEventListener("click", () => {
-      const val = parseFloat(document.getElementById("initialFundInput").value);
-      state.initialFund = Number.isFinite(val) && val >= 0 ? val : 0;
-      renderAll();
-      document.getElementById("settingsModal").classList.remove("open");
+    document.getElementById("saveInitialFundBtn").addEventListener("click", commitInitialFund);
+    document.getElementById("initialFundInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitInitialFund();
+      }
     });
 
     document.getElementById("runSelfTestBtn").addEventListener("click", runSelfTest);
@@ -1394,6 +1470,7 @@
     });
 
     // Init
+    applyPngAppIcons();
     consumeShortcutParams();
     renderStaticCategorySelects();
     renderCategoriesForType();
