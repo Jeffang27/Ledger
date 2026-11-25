@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,7 +13,7 @@
 <link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
 <style>
 :root{--bg-black:#000;--bg-elevated:#111114;--bg-card:#18181c;--bg-card-2:#222228;--text-white:#fff;--text-muted:#9e9ea8;--accent-green:#A9FF3B;--accent-green-soft:rgba(169,255,59,.14);--accent-red:#ff453a;--accent-red-soft:rgba(255,69,58,.14);--border:rgba(255,255,255,.08);--radius-lg:18px;--radius-md:12px;--radius-sm:12px;--fs-s:12px;--fs-m:16px;--fs-xl:32px}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 body{margin:0;padding:0 0 calc(88px + env(safe-area-inset-bottom));background:var(--bg-black);color:var(--text-white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:var(--fs-m);line-height:1.35;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
 .app{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 24px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -25,8 +25,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 select,input,button,textarea{font-family:inherit;font-size:var(--fs-m);color:var(--text-white)}
 select,input,textarea{background:var(--bg-card-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:0 12px;width:100%;min-width:0;height:44px;outline:none;-webkit-appearance:none;appearance:none}
 select{background-image:linear-gradient(45deg,transparent 50%,#9e9ea8 50%),linear-gradient(135deg,#9e9ea8 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
-input[type=date]{display:block;text-align:left}
-input[type=date]::-webkit-date-and-time-value{text-align:left}
+input[type=date]{display:flex;align-items:center;justify-content:flex-start;line-height:42px;text-align:left;padding-top:0;padding-bottom:0}
+input[type=date]::-webkit-datetime-edit{display:inline-flex;align-items:center;padding:0;line-height:1.2}
+input[type=date]::-webkit-datetime-edit-fields-wrapper{display:inline-flex;align-items:center;padding:0}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;padding:0;line-height:1.2}
 select:focus,input:focus{border-color:var(--accent-green)}
 .month-sel{width:auto;height:36px;padding:0 30px 0 12px}
 input[type=checkbox]{width:46px;height:28px;padding:0;border-radius:999px;position:relative;flex-shrink:0;cursor:pointer;transition:background .18s}
@@ -138,10 +140,26 @@ input[type=checkbox]:checked{box-shadow:0 0 10px rgba(169,255,59,.4)}
 .sum-val{font-weight:700;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,8px);max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;background:var(--bg-card-2);border:1px solid var(--border);font-size:var(--fs-s);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* native-like launch & view transition */
+#appSplash{position:fixed;inset:0;background:var(--bg-black);display:grid;place-items:center;z-index:100;opacity:1;transform:scale(1);transition:opacity .32s cubic-bezier(.22,1,.36,1),transform .32s cubic-bezier(.22,1,.36,1);pointer-events:none}
+#appSplash.hide{opacity:0;transform:scale(1.06)}
+.splash-logo{width:76px;height:76px;border-radius:22px;background:var(--bg-card);border:1.5px solid rgba(169,255,59,.55);box-shadow:0 0 28px rgba(169,255,59,.28);display:grid;place-items:center;animation:splashPop .36s cubic-bezier(.22,1,.36,1)}
+@keyframes splashPop{0%{opacity:0;transform:scale(.88)}100%{opacity:1;transform:scale(1)}}
+.app.boot-anim{animation:appEnter .36s cubic-bezier(.22,1,.36,1) both}
+@keyframes appEnter{0%{opacity:0;transform:scale(.965)}100%{opacity:1;transform:scale(1)}}
+section[id^="tab-"]:not(.hidden){animation:tabIn .2s cubic-bezier(.22,1,.36,1)}
+@keyframes tabIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){#appSplash,.app.boot-anim,section[id^="tab-"],.splash-logo{animation:none !important;transition:none !important}}
 </style>
 </head>
 <body>
-<div class="app">
+<div id="appSplash" aria-hidden="true">
+  <div class="splash-logo">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/><path d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </div>
+</div>
+<div class="app boot-anim">
   <header>
     <div class="brand-row">
       <div class="app-icon-badge" aria-hidden="true">
@@ -359,6 +377,30 @@ const STORAGE_KEY = "apple_minimal_rm_tracker_v4";
 const EXPENSE_CATEGORIES = ["Food & Beverage","Bills & Utilities","Transportation","Travel","Gifts & Occasions","Personal Care","Entertainment","Professional Services","Shopping & Gear","Health & Wellness","Others"];
 const INCOME_CATEGORIES = ["Salary","Commission & Bonus","Claim Reimbursement","Side Hustle","Other Income"];
 const $ = (id) => document.getElementById(id);
+
+/* ---------- Disable double-tap zoom & native launch transition ---------- */
+(function preventDoubleTapZoom() {
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+})();
+
+function playLaunchTransition() {
+  const splash = $("appSplash");
+  if (!splash) return;
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      splash.classList.add("hide");
+      setTimeout(() => splash.remove(), 340);
+    }, 120);
+  });
+}
 
 /* ---------- Icon (black bg, glowing green rounded square + plus) ---------- */
 function drawIcon(size) {
@@ -996,6 +1038,7 @@ renderStaticCategorySelects();
 renderLedgerCatSelect();
 renderCategoriesForType();
 renderAll();
+playLaunchTransition();
 </script>
 </body>
 </html>
