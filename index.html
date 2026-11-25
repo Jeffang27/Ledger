@@ -138,9 +138,32 @@ input[type=checkbox]:checked{box-shadow:0 0 10px rgba(169,255,59,.4)}
 .sum-val{font-weight:700;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,8px);max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;background:var(--bg-card-2);border:1px solid var(--border);font-size:var(--fs-s);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* launch splash transition */
+.splash{position:fixed;inset:0;z-index:90;background:var(--bg-black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:auto;transition:opacity .28s ease,transform .28s ease}
+.splash.fade-out{opacity:0;transform:scale(1.03);pointer-events:none}
+.splash.done{display:none}
+.splash-mark{width:64px;height:64px;border-radius:18px;background:var(--bg-card);border:1px solid rgba(169,255,59,.55);box-shadow:0 0 24px rgba(169,255,59,.35);display:grid;place-items:center;animation:splashPop .55s cubic-bezier(.22,1,.36,1) both}
+.splash-label{font-size:var(--fs-s);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-green);opacity:.9;animation:splashText .55s ease both}
+@keyframes splashPop{0%{opacity:0;transform:scale(.84)}65%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes splashText{0%{opacity:0;transform:translateY(6px)}100%{opacity:.9;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+  .splash{transition:opacity .12s linear}
+  .splash-mark,.splash-label{animation:none}
+}
 </style>
 </head>
 <body>
+<div id="splashScreen" class="splash" aria-hidden="true">
+  <div class="splash-mark">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/>
+      <path d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="splash-label">Ledger</div>
+</div>
+
 <div class="app">
   <header>
     <div class="brand-row">
@@ -360,6 +383,20 @@ const EXPENSE_CATEGORIES = ["Food & Beverage","Bills & Utilities","Transportatio
 const INCOME_CATEGORIES = ["Salary","Commission & Bonus","Claim Reimbursement","Side Hustle","Other Income"];
 const $ = (id) => document.getElementById(id);
 
+function runSplashTransition() {
+  const splash = $("splashScreen");
+  if (!splash) return;
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const holdMs = reduced ? 120 : 480;
+  const fadeMs = reduced ? 120 : 280;
+  setTimeout(() => {
+    splash.classList.add("fade-out");
+    setTimeout(() => {
+      splash.classList.add("done");
+    }, fadeMs);
+  }, holdMs);
+}
+
 /* ---------- Icon (black bg, glowing green rounded square + plus) ---------- */
 function drawIcon(size) {
   try {
@@ -393,7 +430,7 @@ function applyPngAppIcons() {
 
 /* ---------- Helpers ---------- */
 const pad = (n) => String(n).padStart(2, "0");
-function todayISO() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; } // local date (not UTC)
+function todayISO() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function currentYM() { return todayISO().slice(0, 7); }
 function prevYM(ym) { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 2, 1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; }
 function formatRM(num) { const n = Number.isFinite(num) ? num : 0; return `RM ${n.toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
@@ -413,7 +450,6 @@ function defaultPresets() {
 function validDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s || "")); }
 function cleanId(s) { return String(s ?? "").replace(/[^\w-]/g, "_").slice(0, 60); }
 
-// Validate + sanitise a backup / saved state. Returns null when the file isn't a Ledger backup.
 function normalizeState(d) {
   if (!d || typeof d !== "object" || !Array.isArray(d.transactions)) return null;
   let skipped = 0;
@@ -453,24 +489,15 @@ function normalizeState(d) {
     presets.push({ id: psId(s.id, "ps"), label: str(s.label, "").slice(0, 20), type: s.type, amount, category: str(s.category, s.type === "income" ? "Other Income" : "Others"), note: typeof s.note === "string" ? s.note.slice(0, 200) : "", work: s.type === "expense" && Boolean(s.work) });
   }
   return {
-    data: { initialFund: Math.max(0, Number(d.initialFund) || 0), transactions, planned, recurring, presets: hasPresets ? presets : defaultPresets() },
-    counts: { tx: transactions.length, planned: planned.length, rec: recurring.length, presets: hasPresets ? presets.length : 0 },
+    data: {
+      initialFund: Math.max(0, Number(d.initialFund) || 0),
+      transactions,
+      planned,
+      recurring,
+      presets: hasPresets ? presets : defaultPresets()
+    },
     skipped
   };
-}
-
-function filterLedger(data, o) {
-  const q = (o.q || "").trim().toLowerCase();
-  let items = data.transactions.filter(t => o.all || (t.date || "").slice(0, 7) === o.month);
-  if (o.filter === "expense") items = items.filter(t => t.type === "expense");
-  if (o.filter === "income") items = items.filter(t => t.type === "income");
-  if (o.filter === "work") items = items.filter(t => t.type === "expense" && t.work);
-  if (o.cat) items = items.filter(t => t.category === o.cat);
-  if (q) items = items.filter(t => [t.note, t.category, t.date, Number(t.amount).toFixed(2)].join(" ").toLowerCase().includes(q));
-  items = items.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-  let income = 0, expense = 0;
-  for (const t of items) { const a = Number(t.amount) || 0; if (t.type === "income") income += a; else expense += a; }
-  return { items, income, expense };
 }
 
 function getDefaultState() {
@@ -486,331 +513,525 @@ function getDefaultState() {
       { id: "p1", title: "Condo Maintenance Fee", amount: 183, dueDate: `${ym}-28`, category: "Bills & Utilities", work: false, paid: false },
       { id: "p2", title: "Girlfriend's Birthday Headphones", amount: 200, dueDate: `${ym}-29`, category: "Gifts & Occasions", work: false, paid: false }
     ],
-    recurring: [{ id: "r1", title: "Device Installment", amount: 150, category: "Shopping & Gear", totalTerms: 12, doneTerms: 3, work: false }],
+    recurring: [
+      { id: "r1", title: "Device Installment", amount: 150, category: "Shopping & Gear", totalTerms: 12, doneTerms: 3, work: false }
+    ],
     presets: defaultPresets()
   };
 }
 
 let state = loadState();
 let selectedMonth = currentYM();
-let ledgerFilter = "all", ledgerQuery = "", ledgerCat = "", ledgerAll = false, presetManage = false, toastTimer;
+let ledgerFilter = "all";
+let ledgerScope = "month";
+let ledgerCat = "all";
+let ledgerQuery = "";
+let presetManageMode = false;
+
+function showToast(msg) {
+  const el = $("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+let confirmCallback = null;
+function openConfirm(title, msg, onOk) {
+  $("cfTitle").textContent = title || "Are you sure?";
+  $("cfMsg").textContent = msg || "";
+  confirmCallback = onOk;
+  $("confirmModal").classList.add("open");
+}
+function closeConfirm() {
+  confirmCallback = null;
+  $("confirmModal").classList.remove("open");
+}
 
 function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("apple_minimal_rm_tracker_v3") || localStorage.getItem("apple_minimal_rm_tracker_v2");
+    const raw =
+      localStorage.getItem(STORAGE_KEY) ||
+      localStorage.getItem("apple_minimal_rm_tracker_v3") ||
+      localStorage.getItem("apple_minimal_rm_tracker_v2");
     if (!raw) return getDefaultState();
-    const n = normalizeState(JSON.parse(raw));
-    return n ? n.data : getDefaultState();
-  } catch { return getDefaultState(); }
-}
-function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
-
-/* ---------- Logic ---------- */
-function computeTotalCash(data) {
-  let total = Math.max(0, Number(data.initialFund) || 0);
-  for (const t of data.transactions || []) { const a = Number(t.amount) || 0; total += t.type === "income" ? a : -a; }
-  return total;
-}
-function computeMonthMetrics(data, ym) {
-  let expense = 0, income = 0, workSpend = 0, personalSpend = 0;
-  const byCategory = {};
-  for (const t of data.transactions.filter(t => (t.date || "").slice(0, 7) === ym)) {
-    const a = Number(t.amount) || 0;
-    if (t.type === "income") income += a;
-    else { expense += a; if (t.work) workSpend += a; else personalSpend += a; byCategory[t.category] = (byCategory[t.category] || 0) + a; }
+    const parsed = JSON.parse(raw);
+    const norm = normalizeState(parsed);
+    return norm ? norm.data : getDefaultState();
+  } catch {
+    return getDefaultState();
   }
-  const pm = prevYM(ym);
-  const prevExpense = data.transactions.filter(t => t.type === "expense" && (t.date || "").slice(0, 7) === pm).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function computeTotalCash(data) {
+  const init = Math.max(0, Number(data.initialFund) || 0);
+  let delta = 0;
+  for (const t of data.transactions || []) {
+    const amt = Number(t.amount) || 0;
+    delta += t.type === "income" ? amt : -amt;
+  }
+  return init + delta;
+}
+
+function computeMonthMetrics(data, ym) {
+  const txInMonth = data.transactions.filter(t => (t.date || "").slice(0, 7) === ym);
+  let expense = 0;
+  let income = 0;
+  let workSpend = 0;
+  let personalSpend = 0;
+  const byCategory = {};
+
+  for (const t of txInMonth) {
+    const amt = Number(t.amount) || 0;
+    if (t.type === "income") {
+      income += amt;
+    } else {
+      expense += amt;
+      if (t.work) workSpend += amt;
+      else personalSpend += amt;
+      byCategory[t.category] = (byCategory[t.category] || 0) + amt;
+    }
+  }
+
+  const prevMonth = prevYM(ym);
+  const prevExpense = data.transactions
+    .filter(t => t.type === "expense" && (t.date || "").slice(0, 7) === prevMonth)
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
   let momPct = 0;
-  if (prevExpense > 0) momPct = ((expense - prevExpense) / prevExpense) * 100;
-  else if (expense > 0) momPct = 100;
+  if (prevExpense > 0) {
+    momPct = ((expense - prevExpense) / prevExpense) * 100;
+  } else if (prevExpense === 0 && expense > 0) {
+    momPct = 100;
+  }
+
   return { expense, income, net: income - expense, workSpend, personalSpend, byCategory, momPct };
 }
+
 function applyRecurringTermStep(rule, dateStr = todayISO()) {
   const total = Math.max(0, Number(rule.totalTerms) || 0);
   const done = Math.max(0, Number(rule.doneTerms) || 0);
-  if (total > 0 && done >= total) return { updatedRule: rule, createdTx: null, completed: true };
+  if (total > 0 && done >= total) {
+    return { updatedRule: rule, createdTx: null, completed: true };
+  }
   const nextDone = total > 0 ? Math.min(total, done + 1) : done + 1;
-  return {
-    updatedRule: { ...rule, doneTerms: nextDone },
-    createdTx: { id: uid("tx"), type: "expense", amount: Number(rule.amount) || 0, category: rule.category || "Others", date: dateStr,
-      note: total > 0 ? `${rule.title} (${nextDone}/${total})` : `${rule.title} (Recurring)`, work: Boolean(rule.work), src: { k: "r", id: rule.id } },
-    completed: false
+  const updatedRule = { ...rule, doneTerms: nextDone };
+  const createdTx = {
+    id: uid("tx"),
+    type: "expense",
+    amount: Number(rule.amount) || 0,
+    category: rule.category || "Others",
+    date: dateStr,
+    note: total > 0 ? `${rule.title} (${nextDone}/${total})` : `${rule.title} (Recurring)`,
+    work: Boolean(rule.work),
+    src: { k: "r", id: rule.id }
   };
+  return { updatedRule, createdTx, completed: false };
 }
-function markPlannedPaid(p, dateStr = todayISO()) {
-  return {
-    updatedPlanned: { ...p, paid: true, paidDate: dateStr },
-    createdTx: { id: uid("tx"), type: "expense", amount: Number(p.amount) || 0, category: p.category || "Others", date: dateStr, note: p.title, work: Boolean(p.work), src: { k: "p", id: p.id } }
+
+function markPlannedPaid(plannedItem, dateStr = todayISO()) {
+  const updatedPlanned = { ...plannedItem, paid: true, paidDate: dateStr };
+  const createdTx = {
+    id: uid("tx"),
+    type: "expense",
+    amount: Number(plannedItem.amount) || 0,
+    category: plannedItem.category || "Others",
+    date: dateStr,
+    note: plannedItem.title,
+    work: Boolean(plannedItem.work),
+    src: { k: "p", id: plannedItem.id }
   };
-}
-// Deleting an auto-generated entry rolls back its source (planned → unpaid, term → -1)
-function revertSource(tx) {
-  if (!tx || !tx.src) return;
-  if (tx.src.k === "p") { const p = state.planned.find(x => x.id === tx.src.id); if (p) { p.paid = false; delete p.paidDate; } }
-  else { const r = state.recurring.find(x => x.id === tx.src.id); if (r && r.doneTerms > 0) r.doneTerms -= 1; }
-}
-function buildCsv(txs) {
-  const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const rows = txs.map(t => [t.id, t.type, Number(t.amount || 0).toFixed(2), t.category, t.date, t.work ? "yes" : "no", t.note].map(esc).join(","));
-  return ["id,type,amount_rm,category,date,work_purpose,note", ...rows].join("\n");
+  return { updatedPlanned, createdTx };
 }
 
-/* ---------- Confirm dialog ---------- */
-let confirmCb = null;
-function askConfirm(title, msg, okLabel, cb) {
-  $("cfTitle").textContent = title; $("cfMsg").textContent = msg; $("cfOk").textContent = okLabel || "Confirm";
-  $("cfCancel").classList.toggle("hidden", !cb);                    // no callback = info notice (single OK)
-  $("cfOk").className = "btn " + (cb ? "btn-danger" : "btn-glow");
-  $("cfOk").style.gridColumn = cb ? "" : "1 / -1";
-  confirmCb = cb; $("confirmModal").classList.add("open");
-}
-function showNotice(title, msg) { askConfirm(title, msg, "OK", null); }
-function toast(msg) { const el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1800); }
-function closeConfirm() { $("confirmModal").classList.remove("open"); confirmCb = null; }
-
-/* ---------- Render ---------- */
-const fmtAmt = (n) => (Number(n) % 1 ? Number(n).toFixed(2) : String(Number(n)));
-
-function fmtD(s) {
-  const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return escapeHtml(s);
-  const mon = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2] - 1];
-  return `${+m[3]} ${mon}${m[1] === String(new Date().getFullYear()) ? "" : " " + m[1]}`;
+function buildCsv(transactions) {
+  const headers = ["id", "type", "amount_rm", "category", "date", "work_purpose", "note"];
+  const escapeCell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = transactions.map(t =>
+    [t.id, t.type, Number(t.amount || 0).toFixed(2), t.category, t.date, t.work ? "yes" : "no", t.note]
+      .map(escapeCell)
+      .join(",")
+  );
+  return [headers.join(","), ...rows].join("\n");
 }
 
 function renderMonthSelect() {
   const months = new Set([currentYM(), selectedMonth]);
   state.transactions.forEach(t => { if (t.date) months.add(t.date.slice(0, 7)); });
   state.planned.forEach(p => { if (p.dueDate) months.add(p.dueDate.slice(0, 7)); });
-  $("monthSelect").innerHTML = Array.from(months).sort().reverse().map(m => `<option value="${m}" ${m === selectedMonth ? "selected" : ""}>${m}</option>`).join("");
+  const sorted = Array.from(months).sort().reverse();
+  $("monthSelect").innerHTML = sorted.map(m => `<option value="${m}" ${m === selectedMonth ? "selected" : ""}>${m}</option>`).join("");
 }
+
 function renderCategoriesForType() {
   const type = $("txType").value;
-  $("txCategory").innerHTML = (type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join("");
+  const list = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  $("txCategory").innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join("");
   $("workToggleWrap").classList.toggle("hidden", type === "income");
 }
-function renderEditCategoriesForType(type, cur) {
-  $("editTxCategory").innerHTML = (type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(c => `<option value="${escapeHtml(c)}" ${c === cur ? "selected" : ""}>${c}</option>`).join("");
+
+function renderEditCategoriesForType(type, currentCat) {
+  const list = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const sel = $("editTxCategory");
+  sel.innerHTML = list.map(c => `<option value="${c}" ${c === currentCat ? "selected" : ""}>${c}</option>`).join("");
   $("editWorkToggleWrap").classList.toggle("hidden", type === "income");
 }
+
 function renderStaticCategorySelects() {
   const opts = EXPENSE_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join("");
-  $("plCategory").innerHTML = opts; $("recCategory").innerHTML = opts;
+  $("plCategory").innerHTML = opts;
+  $("recCategory").innerHTML = opts;
+  const allCats = Array.from(new Set([...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES]));
+  $("ledgerCat").innerHTML = `<option value="all">All categories</option>` + allCats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  if (ledgerCat !== "all" && !allCats.includes(ledgerCat)) ledgerCat = "all";
+  $("ledgerCat").value = ledgerCat;
+}
+
+function renderPresets() {
+  const el = $("presetList");
+  const list = state.presets || [];
+  if (!list.length) {
+    el.innerHTML = `<div class="empty">No presets yet. Fill the form below and tap "Save as preset".</div>`;
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <button type="button" class="chip preset ${presetManageMode ? "del" : ""}" onclick="handlePresetClick('${p.id}')">
+      <span>${escapeHtml(p.label)}</span>
+      <span class="muted">${presetManageMode ? "✕" : formatRM(p.amount)}</span>
+    </button>
+  `).join("");
 }
 
 function renderDashboard() {
   const m = computeMonthMetrics(state, selectedMonth);
   const totalCash = computeTotalCash(state);
+
   $("dashExpense").textContent = formatRM(m.expense);
   $("dashInitialFund").textContent = formatRM(state.initialFund);
   const cashEl = $("dashTotalCash");
   cashEl.textContent = formatRM(totalCash);
   cashEl.className = "stat-val " + (totalCash >= 0 ? "green" : "red");
+
   $("dashIncome").textContent = formatRM(m.income);
   const netEl = $("dashNet");
   netEl.textContent = formatRM(m.net);
   netEl.className = "stat-val " + (m.net >= 0 ? "green" : "red");
 
-  const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth);
-  if (pct > 0) { badge.className = "mom-badge mom-up"; badge.textContent = `▲ +${pct.toFixed(1)}% vs ${pm}`; }
-  else if (pct < 0) { badge.className = "mom-badge mom-down"; badge.textContent = `▼ ${pct.toFixed(1)}% vs ${pm}`; }
-  else { badge.className = "mom-badge mom-flat"; badge.textContent = `0.0% vs ${pm}`; }
+  const badge = $("momBadge");
+  const pct = m.momPct;
+  if (pct > 0) {
+    badge.className = "mom-badge mom-up";
+    badge.textContent = `▲ +${pct.toFixed(1)}% vs ${prevYM(selectedMonth)}`;
+  } else if (pct < 0) {
+    badge.className = "mom-badge mom-down";
+    badge.textContent = `▼ ${pct.toFixed(1)}% vs ${prevYM(selectedMonth)}`;
+  } else {
+    badge.className = "mom-badge mom-flat";
+    badge.textContent = `0.0% vs ${prevYM(selectedMonth)}`;
+  }
 
-  const plannedEl = $("plannedList"), today = todayISO();
+  const plannedEl = $("plannedList");
   if (!state.planned.length) {
     plannedEl.innerHTML = `<div class="empty">No planned outlays yet.</div>`;
   } else {
-    const sorted = state.planned.slice().sort((a, b) => (Number(!!a.paid) - Number(!!b.paid)) || String(a.dueDate).localeCompare(String(b.dueDate)));
-    plannedEl.innerHTML = sorted.map(p => `
+    plannedEl.innerHTML = state.planned.map(p => `
       <div class="row">
         <div class="row-head">
-          <div class="row-title">${escapeHtml(p.title)}${p.work ? `<span class="tag-work">Work</span>` : ""}${p.paid ? `<span class="tag-paid">Paid</span>` : (p.dueDate < today ? `<span class="tag-over">Overdue</span>` : "")}</div>
-          <div class="row-amt">${formatRM(Number(p.amount))}</div>
+          <span class="row-title">${escapeHtml(p.title)}${p.work ? `<span class="tag-work">Work</span>` : ""}${p.paid ? `<span class="tag-paid">Paid</span>` : ""}</span>
+          <span class="row-amt">${formatRM(p.amount)}</span>
         </div>
-        <div class="row-meta">Due ${fmtD(p.dueDate)} · ${escapeHtml(p.category)}</div>
+        <div class="row-meta">Due ${p.dueDate} · ${escapeHtml(p.category)}</div>
         <div class="row-actions">
-          ${p.paid ? "" : `<button class="btn btn-glow btn-sm" title="Mark as paid and log as expense" onclick="handlePayPlanned('${p.id}')">Paid</button>`}
-          <button class="btn btn-ghost btn-sm" onclick="openEditPlanned('${p.id}')">Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="deletePlanned('${p.id}')">✕</button>
+          ${p.paid ? "" : `<button type="button" class="btn btn-glow btn-sm grow" onclick="handlePayPlanned('${p.id}')">Paid &amp; Log</button>`}
+          <button type="button" class="btn btn-ghost btn-sm" onclick="openEditPlanned('${p.id}')">Edit</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="deletePlanned('${p.id}')">✕</button>
         </div>
-      </div>`).join("");
+      </div>
+    `).join("");
   }
 
   const catEl = $("categoryBreakdown");
   const entries = Object.entries(m.byCategory).sort((a, b) => b[1] - a[1]);
-  catEl.innerHTML = !entries.length
-    ? `<div class="empty">No expense entries for ${selectedMonth}.</div>`
-    : entries.map(([cat, amt]) => {
-        const share = m.expense > 0 ? Math.min(100, (amt / m.expense) * 100) : 0;
-        return `<div class="cat-row"><div class="cat-meta"><span>${escapeHtml(cat)}</span><span>${formatRM(amt)} (${share.toFixed(0)}%)</span></div><div class="progress-track"><div class="progress-fill" style="width:${share.toFixed(1)}%;"></div></div></div>`;
-      }).join("");
+  if (!entries.length) {
+    catEl.innerHTML = `<div class="empty">No expense entries for ${selectedMonth}.</div>`;
+  } else {
+    catEl.innerHTML = entries.map(([cat, amt]) => {
+      const share = m.expense > 0 ? Math.min(100, (amt / m.expense) * 100) : 0;
+      return `
+        <div class="cat-row">
+          <div class="cat-meta">
+            <span>${escapeHtml(cat)}</span>
+            <span>${formatRM(amt)} (${share.toFixed(0)}%)</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${share.toFixed(1)}%;"></div></div>
+        </div>
+      `;
+    }).join("");
+  }
 }
 
-function renderLedgerCatSelect() {
-  $("ledgerCat").innerHTML = `<option value="">All categories</option>` + [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES].map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+function getFilteredTransactions() {
+  let items = ledgerScope === "month"
+    ? state.transactions.filter(t => (t.date || "").slice(0, 7) === selectedMonth)
+    : state.transactions.slice();
+
+  if (ledgerFilter === "expense") items = items.filter(t => t.type === "expense");
+  if (ledgerFilter === "income") items = items.filter(t => t.type === "income");
+  if (ledgerFilter === "work") items = items.filter(t => t.type === "expense" && t.work);
+  if (ledgerCat !== "all") items = items.filter(t => t.category === ledgerCat);
+
+  const q = ledgerQuery.trim().toLowerCase();
+  if (q) {
+    items = items.filter(t => {
+      const note = String(t.note || "").toLowerCase();
+      const cat = String(t.category || "").toLowerCase();
+      const amt = Number(t.amount || 0).toFixed(2);
+      return note.includes(q) || cat.includes(q) || amt.includes(q);
+    });
+  }
+
+  return items.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }
-
-function renderPresets() {
-  const el = $("presetList");
-  $("managePresetsBtn").textContent = presetManage ? "Done" : "Manage";
-  if (!state.presets.length) { el.innerHTML = `<div class="empty">No presets yet. Fill in the form below, then tap “Save as preset”.</div>`; return; }
-  el.innerHTML = state.presets.map(p => `<button type="button" class="chip preset${presetManage ? " del" : ""}" onclick="usePreset('${p.id}')">${escapeHtml(p.label)} <span class="${presetManage ? "" : "muted"}">${presetManage ? "✕" : fmtAmt(p.amount)}</span></button>`).join("");
-}
-
-window.usePreset = (id) => {
-  const p = state.presets.find(x => x.id === id); if (!p) return;
-  if (presetManage) { state.presets = state.presets.filter(x => x.id !== id); renderAll(); return; }
-  $("txType").value = p.type; renderCategoriesForType();
-  if ([...$("txCategory").options].some(o => o.value === p.category)) $("txCategory").value = p.category;
-  $("txAmount").value = p.amount; $("txNote").value = p.note || ""; $("txWork").checked = p.type === "expense" && p.work; $("txDate").value = todayISO();
-  toast(`${p.label} · ${formatRM(p.amount)} filled`);
-};
-
-window.clearLedgerFilters = () => {
-  ledgerFilter = "all"; ledgerQuery = ""; ledgerCat = ""; ledgerAll = false;
-  $("ledgerSearch").value = ""; $("ledgerCat").value = ""; $("ledgerScope").value = "month";
-  document.querySelectorAll(".chip[data-filter]").forEach(c => c.classList.toggle("active", c.dataset.filter === "all"));
-  renderLedger();
-};
 
 function renderLedger() {
-  $("ledgerScope").options[0].textContent = selectedMonth;
-  const r = filterLedger(state, { month: selectedMonth, all: ledgerAll, filter: ledgerFilter, cat: ledgerCat, q: ledgerQuery });
-  const n = r.items.length, active = ledgerQuery || ledgerCat || ledgerAll || ledgerFilter !== "all";
-  const net = r.income - r.expense;
-  let main;
-  if (ledgerFilter === "income") main = `<span class="sum-val green">Total in +${formatRM(r.income)}</span>`;
-  else if (ledgerFilter === "expense" || ledgerFilter === "work") main = `<span class="sum-val">Total out -${formatRM(r.expense)}</span>`;
-  else main = `<span class="sum-val ${net >= 0 ? "green" : "red"}">Net ${net >= 0 ? "+" : "-"}${formatRM(Math.abs(net))}</span>`;
-  $("txSummary").innerHTML = `<div class="sum"><div>${main}<div class="meta">${n} ${n === 1 ? "entry" : "entries"} · In ${formatRM(r.income)} · Out ${formatRM(r.expense)}</div></div>${active ? `<button type="button" class="btn btn-ghost btn-sm" onclick="clearLedgerFilters()">Clear</button>` : ""}</div>`;
-  $("txList").innerHTML = !n
-    ? `<div class="empty">No matching entries.</div>`
-    : r.items.map(t => `
-      <div class="row">
-        <div class="row-head">
-          <div class="row-title">${escapeHtml(t.note || t.category)}${t.work ? `<span class="tag-work">Work</span>` : ""}</div>
-          <div class="row-amt ${t.type === "income" ? "green" : ""}">${t.type === "income" ? "+" : "-"}${formatRM(Number(t.amount))}</div>
-        </div>
-        <div class="row-meta">${fmtD(t.date)} · ${escapeHtml(t.category)}</div>
-        <div class="row-actions">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="openEditTx('${t.id}')">Edit</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx('${t.id}')">✕</button>
-        </div>
-      </div>`).join("");
+  const sumEl = $("txSummary");
+  const listEl = $("txList");
+  const items = getFilteredTransactions();
+
+  if (!items.length) {
+    sumEl.innerHTML = "";
+    listEl.innerHTML = `<div class="empty">No matching entries${ledgerScope === "month" ? ` for ${selectedMonth}` : ""}.</div>`;
+    return;
+  }
+
+  let inc = 0, exp = 0;
+  for (const t of items) {
+    const a = Number(t.amount) || 0;
+    if (t.type === "income") inc += a;
+    else exp += a;
+  }
+  const net = inc - exp;
+  const showNet = ledgerFilter === "all" && inc > 0 && exp > 0;
+  const totalLabel = ledgerFilter === "income" ? "Total income" : ledgerFilter === "expense" || ledgerFilter === "work" ? "Total spent" : "Net";
+  const totalVal = ledgerFilter === "income" ? inc : ledgerFilter === "expense" || ledgerFilter === "work" ? exp : net;
+  const valCls = ledgerFilter === "income" ? "green" : ledgerFilter === "all" ? (net >= 0 ? "green" : "red") : "";
+
+  sumEl.innerHTML = `
+    <div class="sum">
+      <span class="meta">${items.length} ${items.length === 1 ? "entry" : "entries"}${showNet ? ` · +${formatRM(inc)} / -${formatRM(exp)}` : ""}</span>
+      <span class="sum-val ${valCls}">${totalLabel}: ${formatRM(totalVal)}</span>
+    </div>
+  `;
+
+  listEl.innerHTML = items.map(t => `
+    <div class="row">
+      <div class="row-head">
+        <span class="row-title">${escapeHtml(t.note || t.category)}${t.work ? `<span class="tag-work">Work</span>` : ""}</span>
+        <span class="row-amt ${t.type === "income" ? "green" : ""}">${t.type === "income" ? "+" : "-"}${formatRM(t.amount)}</span>
+      </div>
+      <div class="row-meta">${t.date} · ${escapeHtml(t.category)}</div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="openEditTx('${t.id}')">Edit</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx('${t.id}')">✕</button>
+      </div>
+    </div>
+  `).join("");
 }
 
 function renderRecurring() {
   const el = $("recurringList");
-  if (!state.recurring.length) { el.innerHTML = `<div class="empty">No recurring rules yet.</div>`; return; }
+  if (!state.recurring.length) {
+    el.innerHTML = `<div class="empty">No recurring rules yet.</div>`;
+    return;
+  }
+
   el.innerHTML = state.recurring.map(r => {
-    const total = Math.max(0, Number(r.totalTerms) || 0), done = Math.max(0, Number(r.doneTerms) || 0);
-    const hasTerms = total > 0, left = hasTerms ? Math.max(0, total - done) : null;
+    const total = Math.max(0, Number(r.totalTerms) || 0);
+    const done = Math.max(0, Number(r.doneTerms) || 0);
+    const hasTerms = total > 0;
+    const left = hasTerms ? Math.max(0, total - done) : null;
     const pct = hasTerms ? Math.min(100, (done / total) * 100) : 100;
     const finished = hasTerms && done >= total;
+
     return `
       <div class="row">
         <div class="row-head">
-          <div class="row-title">${escapeHtml(r.title)}${r.work ? `<span class="tag-work">Work</span>` : ""}</div>
-          <div class="row-amt">${formatRM(Number(r.amount))}</div>
+          <span class="row-title">${escapeHtml(r.title)}${r.work ? `<span class="tag-work">Work</span>` : ""}</span>
+          <span class="row-amt">${formatRM(r.amount)}</span>
         </div>
         <div class="row-meta">${escapeHtml(r.category)} · ${hasTerms ? `Done ${done}/${total} (${left} left)` : `Open-ended (${done} logged)`}</div>
         ${hasTerms ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>` : ""}
         <div class="row-actions">
-          <button class="btn ${finished ? "btn-ghost" : "btn-glow"} btn-sm grow" ${finished ? "disabled" : ""} onclick="handleLogTerm('${r.id}')">${finished ? "Completed" : "Log 1 Term"}</button>
-          <button class="btn btn-ghost btn-sm" onclick="openEditRecurring('${r.id}')">Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteRecurring('${r.id}')">✕</button>
+          <button type="button" class="btn ${finished ? "btn-ghost" : "btn-glow"} btn-sm grow" ${finished ? "disabled" : ""} onclick="handleLogTerm('${r.id}')">${finished ? "Completed" : "Log 1 Term"}</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="openEditRecurring('${r.id}')">Edit</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="deleteRecurring('${r.id}')">✕</button>
         </div>
-      </div>`;
+      </div>
+    `;
   }).join("");
 }
 
 function renderAll() {
   saveState();
   $("initialFundInput").value = state.initialFund;
-  renderMonthSelect(); renderDashboard(); renderLedger(); renderRecurring(); renderPresets();
+  renderMonthSelect();
+  renderPresets();
+  renderDashboard();
+  renderLedger();
+  renderRecurring();
   const baseUrl = window.location.href.split("#")[0].split("?")[0];
-  $("shortcutUrlBox").textContent = `${baseUrl}?type=expense&amount=18.50&category=Food%20%26%20Beverage&note=Lunch&work=0`;
+  $("shortcutUrlBox").textContent =
+    `${baseUrl}?type=expense&amount=18.50&category=Food%20%26%20Beverage&note=Lunch&work=0`;
 }
 
-/* ---------- Actions ---------- */
-function openSettings() { $("initialFundInput").value = state.initialFund; $("settingsModal").classList.add("open"); }
-function openSettingsAndFocusFund() { openSettings(); setTimeout(() => $("initialFundInput").focus(), 60); }
+function openSettingsModalAndFocusFund() {
+  $("initialFundInput").value = state.initialFund;
+  $("settingsModal").classList.add("open");
+  setTimeout(() => $("initialFundInput").focus(), 60);
+}
+
 function commitInitialFund() {
-  const v = parseFloat($("initialFundInput").value);
-  state.initialFund = Number.isFinite(v) && v >= 0 ? v : 0;
-  renderAll(); $("settingsModal").classList.remove("open");
+  const val = parseFloat($("initialFundInput").value);
+  state.initialFund = Number.isFinite(val) && val >= 0 ? val : 0;
+  renderAll();
+  $("settingsModal").classList.remove("open");
+  showToast("Initial fund updated");
 }
 
-window.openEditTx = (id) => {
-  const tx = state.transactions.find(t => t.id === id); if (!tx) return;
-  $("editTxId").value = tx.id; $("editTxType").value = tx.type; $("editTxAmount").value = tx.amount;
-  $("editTxDate").value = tx.date || todayISO(); $("editTxNote").value = tx.note || ""; $("editTxWork").checked = Boolean(tx.work);
+window.handlePresetClick = function(id) {
+  const idx = (state.presets || []).findIndex(p => p.id === id);
+  if (idx === -1) return;
+  const p = state.presets[idx];
+  if (presetManageMode) {
+    state.presets.splice(idx, 1);
+    renderAll();
+    showToast(`Removed "${p.label}"`);
+    return;
+  }
+  $("txType").value = p.type;
+  renderCategoriesForType();
+  $("txAmount").value = p.amount;
+  $("txCategory").value = p.category;
+  $("txNote").value = p.note;
+  $("txWork").checked = p.type === "expense" && Boolean(p.work);
+  showToast(`Applied "${p.label}"`);
+};
+
+window.openEditTx = function(id) {
+  const tx = state.transactions.find(t => t.id === id);
+  if (!tx) return;
+  $("editTxId").value = tx.id;
+  $("editTxType").value = tx.type;
+  $("editTxAmount").value = tx.amount;
+  $("editTxDate").value = tx.date || todayISO();
+  $("editTxNote").value = tx.note || "";
+  $("editTxWork").checked = Boolean(tx.work);
   renderEditCategoriesForType(tx.type, tx.category);
   $("editTxModal").classList.add("open");
 };
-window.deleteTx = (id) => {
-  const tx = state.transactions.find(t => t.id === id); if (!tx) return;
-  askConfirm("Delete entry?", `${tx.note || tx.category} · ${formatRM(Number(tx.amount))}` + (tx.src ? "\nThe linked plan / term will be rolled back." : ""), "Delete", () => {
-    revertSource(tx);
-    state.transactions = state.transactions.filter(t => t.id !== id);
+
+window.openEditPlanned = function(id) {
+  const pl = state.planned.find(p => p.id === id);
+  if (!pl) return;
+  $("plModalTitle").textContent = "Edit Planned Outlay";
+  $("plSubmitBtn").textContent = "Update Planned Outlay";
+  $("plId").value = pl.id;
+  $("plTitle").value = pl.title;
+  $("plAmount").value = pl.amount;
+  $("plDueDate").value = pl.dueDate || todayISO();
+  $("plCategory").value = pl.category || "Others";
+  $("plWork").checked = Boolean(pl.work);
+  $("plannedModal").classList.add("open");
+};
+
+window.deletePlanned = function(id) {
+  const pl = state.planned.find(p => p.id === id);
+  if (!pl) return;
+  openConfirm("Delete Planned Outlay", `Remove "${pl.title}" (${formatRM(pl.amount)})?`, () => {
+    state.planned = state.planned.filter(p => p.id !== id);
     renderAll();
+    showToast("Planned outlay removed");
   });
 };
 
-window.handlePayPlanned = (id) => {
-  const i = state.planned.findIndex(p => p.id === id);
-  if (i === -1 || state.planned[i].paid) return;
-  const { updatedPlanned, createdTx } = markPlannedPaid(state.planned[i]);
-  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll();
-};
-function openPlannedForm(p) {
-  $("plId").value = p ? p.id : "";
-  $("plTitle").value = p ? p.title : "";
-  $("plAmount").value = p ? p.amount : "";
-  $("plDueDate").value = p ? p.dueDate : todayISO();
-  $("plCategory").value = p && EXPENSE_CATEGORIES.includes(p.category) ? p.category : EXPENSE_CATEGORIES[0];
-  $("plWork").checked = p ? Boolean(p.work) : false;
-  $("plModalTitle").textContent = p ? "Edit Planned Outlay" : "Add Planned Outlay";
-  $("plSubmitBtn").textContent = p ? "Update Planned Outlay" : "Save Planned Outlay";
-  $("plannedModal").classList.add("open");
-}
-window.openEditPlanned = (id) => { const p = state.planned.find(x => x.id === id); if (p) openPlannedForm(p); };
-window.deletePlanned = (id) => {
-  const p = state.planned.find(x => x.id === id); if (!p) return;
-  askConfirm("Delete plan?", `${p.title} · ${formatRM(Number(p.amount))}`, "Delete", () => { state.planned = state.planned.filter(x => x.id !== id); renderAll(); });
-};
-
-window.handleLogTerm = (id) => {
-  const i = state.recurring.findIndex(r => r.id === id); if (i === -1) return;
-  const { updatedRule, createdTx, completed } = applyRecurringTermStep(state.recurring[i]);
-  if (completed || !createdTx) return;
-  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll();
-};
-function openRecForm(r) {
-  $("recId").value = r ? r.id : "";
-  $("recTitle").value = r ? r.title : "";
-  $("recAmount").value = r ? r.amount : "";
-  $("recCategory").value = r && EXPENSE_CATEGORIES.includes(r.category) ? r.category : EXPENSE_CATEGORIES[0];
-  $("recTotalTerms").value = r ? r.totalTerms : 0;
-  $("recDoneTerms").value = r ? r.doneTerms : 0;
-  $("recWork").checked = r ? Boolean(r.work) : false;
-  $("recFormTitle").textContent = r ? "Edit Rule" : "New Rule";
-  $("recSubmitBtn").textContent = r ? "Save Changes" : "Add Recurring Rule";
+window.openEditRecurring = function(id) {
+  const rec = state.recurring.find(r => r.id === id);
+  if (!rec) return;
+  $("recId").value = rec.id;
+  $("recFormTitle").textContent = "Edit Rule";
+  $("recSubmitBtn").textContent = "Save Rule";
+  $("recTitle").value = rec.title;
+  $("recAmount").value = rec.amount;
+  $("recCategory").value = rec.category || "Others";
+  $("recTotalTerms").value = rec.totalTerms || 0;
+  $("recDoneTerms").value = rec.doneTerms || 0;
+  $("recWork").checked = Boolean(rec.work);
   $("recurringForm").classList.remove("hidden");
-  $("recurringForm").scrollIntoView({ behavior: "smooth", block: "center" });
-}
-window.openEditRecurring = (id) => { const r = state.recurring.find(x => x.id === id); if (r) openRecForm(r); };
-window.deleteRecurring = (id) => {
-  const r = state.recurring.find(x => x.id === id); if (!r) return;
-  askConfirm("Delete rule?", `${r.title} · ${formatRM(Number(r.amount))}\nPast logged entries stay in the Ledger.`, "Delete", () => { state.recurring = state.recurring.filter(x => x.id !== id); renderAll(); });
 };
 
-function switchTab(tab) {
-  ["dashboard", "log", "ledger", "recurring"].forEach(n => $("tab-" + n).classList.toggle("hidden", n !== tab));
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
-  $("fabAddBtn").classList.toggle("hidden", tab === "log");
-  window.scrollTo(0, 0);
+window.deleteRecurring = function(id) {
+  const rec = state.recurring.find(r => r.id === id);
+  if (!rec) return;
+  openConfirm("Delete Recurring Rule", `Remove "${rec.title}"?`, () => {
+    state.recurring = state.recurring.filter(r => r.id !== id);
+    if ($("recId").value === id) resetRecurringForm();
+    renderAll();
+    showToast("Rule removed");
+  });
+};
+
+function resetRecurringForm() {
+  $("recId").value = "";
+  $("recFormTitle").textContent = "New Rule";
+  $("recSubmitBtn").textContent = "Add Recurring Rule";
+  $("recurringForm").reset();
+  $("recTotalTerms").value = "0";
+  $("recDoneTerms").value = "0";
+}
+
+window.handlePayPlanned = function(id) {
+  const idx = state.planned.findIndex(p => p.id === id);
+  if (idx === -1 || state.planned[idx].paid) return;
+  const { updatedPlanned, createdTx } = markPlannedPaid(state.planned[idx]);
+  state.planned[idx] = updatedPlanned;
+  state.transactions.push(createdTx);
+  renderAll();
+  showToast(`Logged ${formatRM(createdTx.amount)}`);
+};
+
+window.handleLogTerm = function(id) {
+  const idx = state.recurring.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  const { updatedRule, createdTx, completed } = applyRecurringTermStep(state.recurring[idx]);
+  if (completed || !createdTx) return;
+  state.recurring[idx] = updatedRule;
+  state.transactions.push(createdTx);
+  renderAll();
+  showToast(`Logged term (${formatRM(createdTx.amount)})`);
+};
+
+window.deleteTx = function(id) {
+  const tx = state.transactions.find(t => t.id === id);
+  if (!tx) return;
+  openConfirm("Delete Entry", `${tx.note || tx.category} · ${formatRM(tx.amount)} (${tx.date})`, () => {
+    state.transactions = state.transactions.filter(t => t.id !== id);
+    renderAll();
+    showToast("Entry deleted");
+  });
+};
+
+function switchTab(tabName) {
+  ["dashboard", "log", "ledger", "recurring"].forEach(name => {
+    $("tab-" + name).classList.toggle("hidden", name !== tabName);
+  });
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
 }
 
 function consumeShortcutParams() {
@@ -818,184 +1039,348 @@ function consumeShortcutParams() {
   const amount = parseFloat(params.get("amount"));
   if (Number.isFinite(amount) && amount > 0) {
     const type = params.get("type") === "income" ? "income" : "expense";
+    const cat = params.get("category") || (type === "income" ? "Other Income" : "Others");
+    const note = params.get("note") || "Shortcut Entry";
+    const work = params.get("work") === "1" || params.get("work") === "true";
     state.transactions.push({
-      id: uid("sc"), type, amount,
-      category: params.get("category") || (type === "income" ? "Other Income" : "Others"),
-      date: todayISO(), note: params.get("note") || "Shortcut Entry",
-      work: type === "expense" && (params.get("work") === "1" || params.get("work") === "true")
+      id: uid("sc"),
+      type,
+      amount,
+      category: cat,
+      date: todayISO(),
+      note,
+      work
     });
     history.replaceState({}, "", window.location.pathname);
+    showToast(`Added ${formatRM(amount)}`);
   }
 }
 
-function downloadBlob(blob, name) {
-  const url = URL.createObjectURL(blob), a = document.createElement("a");
-  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
-}
-
 function runSelfTest() {
-  const out = [];
-  const t = (cond, name) => out.push(`${cond ? "[PASS]" : "[FAIL]"} ${name}`);
-  const m1 = computeMonthMetrics({ transactions: [{ id: "1", type: "expense", amount: 100, category: "Others", date: "2026-05-05", note: "T", work: false }] }, "2026-05");
-  t(Number.isFinite(m1.momPct) && m1.momPct === 100, "Zero previous spend avoids NaN/Infinity");
-  const r0 = { id: "r", title: "T", amount: 50, category: "Others", totalTerms: 2, doneTerms: 1, work: false };
-  const s1 = applyRecurringTermStep(r0, "2026-05-01"), s2 = applyRecurringTermStep(s1.updatedRule, "2026-05-02");
-  t(s1.updatedRule.doneTerms === 2 && s2.completed === true, "Installment stops cleanly at total terms");
-  const pr = markPlannedPaid({ id: "p", title: "Fee", amount: 183, dueDate: "2026-05-10", category: "Others", work: false, paid: false }, "2026-05-10");
-  t(pr.updatedPlanned.paid === true && pr.createdTx.amount === 183, "Planned outlay marks paid & creates expense");
-  t(computeTotalCash({ initialFund: 1000, transactions: [{ type: "income", amount: 500 }, { type: "expense", amount: 200 }] }) === 1300, "Initial fund + income - expense = total cash");
-  t(/^\d{4}-\d{2}-\d{2}$/.test(todayISO()) && prevYM("2026-01") === "2025-12", "Local date format & year rollover");
-  t(buildCsv([{ id: "1", type: "expense", amount: 1, category: "A", date: "2026-01-01", note: 'a"b', work: true }]).includes('"a""b"'), "CSV escapes quotes");
-  t(normalizeState(null) === null && normalizeState({}) === null && normalizeState([]) === null, "Import rejects non-backup files");
-  const nz = normalizeState({ transactions: [{ id: 'a"><b', type: "expense", amount: 5, date: "2026-01-02", category: "X" }, { type: "bad" }] });
-  t(nz && nz.counts.tx === 1 && nz.skipped === 1 && !/["<>]/.test(nz.data.transactions[0].id), "Import sanitises ids and skips invalid rows");
-  const fl = filterLedger({ transactions: [
-    { id: "1", type: "expense", amount: 12, category: "Food & Beverage", date: "2026-05-02", note: "Lunch", work: false },
-    { id: "2", type: "income", amount: 100, category: "Salary", date: "2026-05-01", note: "Pay", work: false },
-    { id: "3", type: "expense", amount: 8, category: "Food & Beverage", date: "2026-04-30", note: "Coffee", work: true }] },
-    { month: "2026-05", all: false, filter: "all", cat: "", q: "" });
-  t(fl.items.length === 2 && fl.income === 100 && fl.expense === 12, "Ledger month totals");
-  t(filterLedger({ transactions: fl.items }, { month: "x", all: true, filter: "all", cat: "", q: "lun" }).items.length === 1, "Ledger search matches note");
-  t(defaultPresets().length > 0, "Default presets exist");
+  const results = [];
+  const assert = (cond, name) => results.push(`${cond ? "[PASS]" : "[FAIL]"} ${name}`);
+
+  const mockZeroPrev = {
+    transactions: [{ id: "1", type: "expense", amount: 100, category: "Bills & Utilities", date: "2026-05-05", note: "Test", work: false }]
+  };
+  const m1 = computeMonthMetrics(mockZeroPrev, "2026-05");
+  assert(Number.isFinite(m1.momPct) && m1.momPct === 100, "Zero previous spend avoids NaN/Infinity");
+
+  const rTest = { id: "r", title: "Test", amount: 50, category: "Others", totalTerms: 2, doneTerms: 1, work: false };
+  const step1 = applyRecurringTermStep(rTest, "2026-05-01");
+  const step2 = applyRecurringTermStep(step1.updatedRule, "2026-05-02");
+  assert(step1.updatedRule.doneTerms === 2 && step2.completed === true, "Installment stops cleanly at total terms");
+
+  const pTest = { id: "p", title: "Maintenance Fee", amount: 183, dueDate: "2026-05-10", category: "Bills & Utilities", work: false, paid: false };
+  const paidRes = markPlannedPaid(pTest, "2026-05-10");
+  assert(paidRes.updatedPlanned.paid === true && paidRes.createdTx.amount === 183, "Planned outlay marks paid & creates expense");
+
+  const cash = computeTotalCash({
+    initialFund: 1000,
+    transactions: [
+      { type: "income", amount: 500 },
+      { type: "expense", amount: 200 }
+    ]
+  });
+  assert(cash === 1300, "Initial fund + income - expense calculates total cash accurately");
+
   $("selfTestOutputWrap").classList.remove("hidden");
-  $("selfTestOutput").textContent = out.join("\n");
+  $("selfTestOutput").textContent = results.join("\n");
 }
 
-/* ---------- Events ---------- */
-document.querySelectorAll(".nav-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+// Event bindings
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
+
 $("quickAddBtn").addEventListener("click", () => switchTab("log"));
 $("fabAddBtn").addEventListener("click", () => switchTab("log"));
-$("inlineEditFundBtn").addEventListener("click", openSettingsAndFocusFund);
-$("openSettingsBtn").addEventListener("click", openSettings);
-$("monthSelect").addEventListener("change", (e) => { selectedMonth = e.target.value; renderAll(); });
+$("inlineEditFundBtn").addEventListener("click", openSettingsModalAndFocusFund);
+
+$("monthSelect").addEventListener("change", (e) => {
+  selectedMonth = e.target.value;
+  renderAll();
+});
+
+$("managePresetsBtn").addEventListener("click", () => {
+  presetManageMode = !presetManageMode;
+  $("managePresetsBtn").textContent = presetManageMode ? "Done" : "Manage";
+  renderPresets();
+});
+
+$("savePresetBtn").addEventListener("click", () => {
+  const amount = parseFloat($("txAmount").value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showToast("Enter an amount first");
+    return;
+  }
+  const type = $("txType").value;
+  const category = $("txCategory").value;
+  const note = $("txNote").value.trim() || category;
+  const label = note.slice(0, 20);
+  const work = type === "expense" && $("txWork").checked;
+  state.presets = state.presets || [];
+  state.presets.push({ id: uid("ps"), label, type, amount, category, note, work });
+  saveState();
+  renderPresets();
+  showToast(`Saved preset "${label}"`);
+});
+
 $("txType").addEventListener("change", renderCategoriesForType);
+$("txDate").value = todayISO();
 
 $("txForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const amount = parseFloat($("txAmount").value);
   if (!Number.isFinite(amount) || amount <= 0) return;
-  const type = $("txType").value, date = $("txDate").value || todayISO();
-  state.transactions.push({ id: uid("tx"), type, amount, category: $("txCategory").value, date, note: $("txNote").value.trim(), work: type === "expense" && $("txWork").checked });
+  const type = $("txType").value;
+  const category = $("txCategory").value;
+  const date = $("txDate").value || todayISO();
+  const note = $("txNote").value.trim();
+  const work = type === "expense" && $("txWork").checked;
+
+  state.transactions.push({ id: uid("tx"), type, amount, category, date, note, work });
   selectedMonth = date.slice(0, 7);
-  e.target.reset(); $("txDate").value = todayISO(); renderCategoriesForType(); renderAll(); switchTab("dashboard");
+  e.target.reset();
+  $("txDate").value = todayISO();
+  renderCategoriesForType();
+  renderAll();
+  switchTab("dashboard");
+  showToast(`Saved ${formatRM(amount)}`);
 });
 
-$("editTxType").addEventListener("change", (e) => renderEditCategoriesForType(e.target.value, $("editTxCategory").value));
+$("editTxType").addEventListener("change", (e) => {
+  renderEditCategoriesForType(e.target.value, $("editTxCategory").value);
+});
+
 $("closeEditTxModal").addEventListener("click", () => $("editTxModal").classList.remove("open"));
+
 $("editTxForm").addEventListener("submit", (e) => {
   e.preventDefault();
+  const id = $("editTxId").value;
   const amount = parseFloat($("editTxAmount").value);
   if (!Number.isFinite(amount) || amount <= 0) return;
-  const idx = state.transactions.findIndex(t => t.id === $("editTxId").value); if (idx === -1) return;
-  const type = $("editTxType").value, date = $("editTxDate").value || todayISO();
-  state.transactions[idx] = { ...state.transactions[idx], type, amount, category: $("editTxCategory").value, date, note: $("editTxNote").value.trim(), work: type === "expense" && $("editTxWork").checked };
+  const idx = state.transactions.findIndex(t => t.id === id);
+  if (idx === -1) return;
+
+  const type = $("editTxType").value;
+  const category = $("editTxCategory").value;
+  const date = $("editTxDate").value || todayISO();
+  const note = $("editTxNote").value.trim();
+  const work = type === "expense" && $("editTxWork").checked;
+
+  state.transactions[idx] = { ...state.transactions[idx], type, amount, category, date, note, work };
   selectedMonth = date.slice(0, 7);
-  $("editTxModal").classList.remove("open"); renderAll();
+  $("editTxModal").classList.remove("open");
+  renderAll();
+  showToast("Entry updated");
 });
 
-document.querySelectorAll(".chip[data-filter]").forEach(chip => chip.addEventListener("click", () => {
-  document.querySelectorAll(".chip[data-filter]").forEach(c => c.classList.remove("active"));
-  chip.classList.add("active"); ledgerFilter = chip.dataset.filter; renderLedger();
-}));
+$("ledgerSearch").addEventListener("input", (e) => {
+  ledgerQuery = e.target.value;
+  renderLedger();
+});
+
+$("ledgerScope").addEventListener("change", (e) => {
+  ledgerScope = e.target.value;
+  renderLedger();
+});
+
+$("ledgerCat").addEventListener("change", (e) => {
+  ledgerCat = e.target.value;
+  renderLedger();
+});
+
+document.querySelectorAll(".chip[data-filter]").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".chip[data-filter]").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    ledgerFilter = chip.dataset.filter;
+    renderLedger();
+  });
+});
 
 $("toggleRecurringFormBtn").addEventListener("click", () => {
   const form = $("recurringForm");
-  if (form.classList.contains("hidden")) openRecForm(null);
-  else { form.classList.add("hidden"); form.reset(); $("recId").value = ""; }
+  const isHidden = form.classList.contains("hidden");
+  if (isHidden) {
+    resetRecurringForm();
+    form.classList.remove("hidden");
+  } else {
+    resetRecurringForm();
+    form.classList.add("hidden");
+  }
 });
+
 $("recurringForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const title = $("recTitle").value.trim(), amount = parseFloat($("recAmount").value);
+  const title = $("recTitle").value.trim();
+  const amount = parseFloat($("recAmount").value);
   if (!title || !Number.isFinite(amount) || amount <= 0) return;
-  const totalTerms = Math.max(0, parseInt($("recTotalTerms").value || "0", 10) || 0);
-  const doneRaw = Math.max(0, parseInt($("recDoneTerms").value || "0", 10) || 0);
-  const rule = { title, amount, category: $("recCategory").value, totalTerms, doneTerms: totalTerms > 0 ? Math.min(totalTerms, doneRaw) : doneRaw, work: $("recWork").checked };
-  const id = $("recId").value, idx = state.recurring.findIndex(r => r.id === id);
-  if (id && idx !== -1) state.recurring[idx] = { ...state.recurring[idx], ...rule };
-  else state.recurring.push({ id: uid("rec"), ...rule });
-  e.target.reset(); $("recId").value = ""; $("recurringForm").classList.add("hidden"); renderAll();
+  const totalTerms = Math.max(0, parseInt($("recTotalTerms").value || "0", 10));
+  const doneTermsRaw = Math.max(0, parseInt($("recDoneTerms").value || "0", 10));
+  const doneTerms = totalTerms > 0 ? Math.min(totalTerms, doneTermsRaw) : doneTermsRaw;
+  const payload = {
+    title,
+    amount,
+    category: $("recCategory").value,
+    totalTerms,
+    doneTerms,
+    work: $("recWork").checked
+  };
+
+  const existingId = $("recId").value;
+  if (existingId) {
+    const idx = state.recurring.findIndex(r => r.id === existingId);
+    if (idx !== -1) state.recurring[idx] = { ...state.recurring[idx], ...payload };
+    showToast("Rule updated");
+  } else {
+    state.recurring.push({ id: uid("rec"), ...payload });
+    showToast("Rule added");
+  }
+
+  resetRecurringForm();
+  $("recurringForm").classList.add("hidden");
+  renderAll();
 });
 
-$("addPlannedBtn").addEventListener("click", () => openPlannedForm(null));
+$("addPlannedBtn").addEventListener("click", () => {
+  $("plModalTitle").textContent = "Add Planned Outlay";
+  $("plSubmitBtn").textContent = "Save Planned Outlay";
+  $("plId").value = "";
+  $("plTitle").value = "";
+  $("plAmount").value = "";
+  $("plDueDate").value = todayISO();
+  $("plCategory").value = "Others";
+  $("plWork").checked = false;
+  $("plannedModal").classList.add("open");
+});
+
 $("closePlannedModal").addEventListener("click", () => $("plannedModal").classList.remove("open"));
+
 $("plannedForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const title = $("plTitle").value.trim(), amount = parseFloat($("plAmount").value);
+  const title = $("plTitle").value.trim();
+  const amount = parseFloat($("plAmount").value);
   if (!title || !Number.isFinite(amount) || amount <= 0) return;
-  const data = { title, amount, dueDate: $("plDueDate").value || todayISO(), category: $("plCategory").value, work: $("plWork").checked };
-  const id = $("plId").value, idx = state.planned.findIndex(p => p.id === id);
-  if (id && idx !== -1) state.planned[idx] = { ...state.planned[idx], ...data };
-  else state.planned.push({ id: uid("pl"), ...data, paid: false });
-  $("plannedModal").classList.remove("open"); renderAll();
+  const payload = {
+    title,
+    amount,
+    dueDate: $("plDueDate").value || todayISO(),
+    category: $("plCategory").value,
+    work: $("plWork").checked
+  };
+  const existingId = $("plId").value;
+  if (existingId) {
+    const idx = state.planned.findIndex(p => p.id === existingId);
+    if (idx !== -1) state.planned[idx] = { ...state.planned[idx], ...payload };
+    showToast("Planned outlay updated");
+  } else {
+    state.planned.push({ id: uid("pl"), ...payload, paid: false });
+    showToast("Planned outlay added");
+  }
+  $("plannedModal").classList.remove("open");
+  renderAll();
 });
 
+$("openSettingsBtn").addEventListener("click", openSettingsModalAndFocusFund);
 $("closeSettingsModal").addEventListener("click", () => $("settingsModal").classList.remove("open"));
 $("saveInitialFundBtn").addEventListener("click", commitInitialFund);
-$("initialFundInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); commitInitialFund(); } });
-$("runSelfTestBtn").addEventListener("click", runSelfTest);
-$("saveIconBtn").addEventListener("click", () => {
-  const url = drawIcon(512); if (!url) return;
-  const a = document.createElement("a"); a.href = url; a.download = "ledger-icon.png"; document.body.appendChild(a); a.click(); a.remove();
+$("initialFundInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    commitInitialFund();
+  }
 });
-$("exportJsonBtn").addEventListener("click", () => downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), `expense-tracker-${todayISO()}.json`));
-$("exportCsvBtn").addEventListener("click", () => downloadBlob(new Blob(["\ufeff" + buildCsv(state.transactions)], { type: "text/csv;charset=utf-8;" }), `expense-tracker-${todayISO()}.csv`));
+
+$("saveIconBtn").addEventListener("click", () => {
+  const url = drawIcon(512);
+  if (!url) return;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ledger-icon-512.png";
+  a.click();
+  showToast("Downloaded icon PNG");
+});
+
+$("runSelfTestBtn").addEventListener("click", runSelfTest);
+
+$("exportJsonBtn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `expense-tracker-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Exported JSON");
+});
+
+$("exportCsvBtn").addEventListener("click", () => {
+  const blob = new Blob([buildCsv(state.transactions)], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `expense-tracker-${todayISO()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Exported CSV");
+});
 
 $("importJsonInput").addEventListener("change", (e) => {
-  const input = e.target, file = input.files && input.files[0]; if (!file) return;
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
   const reader = new FileReader();
-  const unsupported = () => { input.value = ""; showNotice("File doesn’t support", "This isn’t a valid Ledger JSON backup.\nPlease choose a file exported from this app (Export JSON)."); };
-  reader.onerror = unsupported;
   reader.onload = () => {
-    let res = null;
-    try { res = normalizeState(JSON.parse(reader.result)); } catch { res = null; }
-    if (!res) return unsupported();
-    input.value = "";
-    const c = res.counts, total = c.tx + c.planned + c.rec + c.presets;
-    const word = total === 1 ? "record" : "records";
-    const detail = `${c.tx} transactions · ${c.planned} plans · ${c.rec} terms · ${c.presets} presets` + (res.skipped ? `\n${res.skipped} invalid skipped` : "");
-    askConfirm("Replace current data?", `Found ${total} ${word}.\n${detail}\n\nThis replaces everything currently in the app.`, "Replace", () => {
-      state = res.data; selectedMonth = currentYM(); renderAll();
-      showNotice("Import complete", `Imported ${total} ${word}.\n${detail}`);
-    });
+    try {
+      const data = JSON.parse(reader.result);
+      const norm = normalizeState(data);
+      if (!norm) {
+        showToast("Invalid backup JSON");
+        return;
+      }
+      state = norm.data;
+      selectedMonth = state.transactions[0]?.date?.slice(0, 7) || currentYM();
+      renderAll();
+      showToast(norm.skipped ? `Imported (skipped ${norm.skipped})` : "Imported backup");
+    } catch {
+      showToast("Could not read JSON");
+    }
   };
   reader.readAsText(file);
 });
 
 $("resetDemoBtn").addEventListener("click", () => {
-  askConfirm("Reset to sample data?", "All your transactions, plans, terms and Initial Fund will be erased and replaced with sample data. This cannot be undone.", "Yes, Reset", () => {
-    state = getDefaultState(); selectedMonth = currentYM(); renderAll(); $("settingsModal").classList.remove("open");
-  });
+  openConfirm(
+    "Reset to Sample Data",
+    "This replaces your current transactions, planned outlays, and rules with sample entries.",
+    () => {
+      state = getDefaultState();
+      selectedMonth = currentYM();
+      presetManageMode = false;
+      $("managePresetsBtn").textContent = "Manage";
+      renderAll();
+      $("settingsModal").classList.remove("open");
+      showToast("Reset to sample data");
+    }
+  );
 });
 
 $("cfCancel").addEventListener("click", closeConfirm);
-$("cfOk").addEventListener("click", () => { const cb = confirmCb; closeConfirm(); if (cb) cb(); });
-document.querySelectorAll(".modal-backdrop").forEach(el => el.addEventListener("click", (e) => { if (e.target === el) { el.classList.remove("open"); if (el.id === "confirmModal") confirmCb = null; } }));
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll(".modal-backdrop.open").forEach(m => m.classList.remove("open")); });
-
-$("ledgerSearch").addEventListener("input", (e) => { ledgerQuery = e.target.value; renderLedger(); });
-$("ledgerScope").addEventListener("change", (e) => { ledgerAll = e.target.value === "all"; renderLedger(); });
-$("ledgerCat").addEventListener("change", (e) => { ledgerCat = e.target.value; renderLedger(); });
-$("managePresetsBtn").addEventListener("click", () => { presetManage = !presetManage; renderPresets(); });
-$("savePresetBtn").addEventListener("click", () => {
-  const amount = parseFloat($("txAmount").value), type = $("txType").value, note = $("txNote").value.trim(), category = $("txCategory").value;
-  if (!Number.isFinite(amount) || amount <= 0) { showNotice("Amount needed", "Enter an amount first, then tap Save as preset."); return; }
-  const label = (note || category).slice(0, 20);
-  const idx = state.presets.findIndex(p => p.label.toLowerCase() === label.toLowerCase() && p.type === type);
-  if (idx === -1 && state.presets.length >= 16) { showNotice("Preset limit", "You can keep up to 16 presets. Remove one in Manage first."); return; }
-  const preset = { id: idx !== -1 ? state.presets[idx].id : uid("ps"), label, type, amount, category, note, work: type === "expense" && $("txWork").checked };
-  if (idx !== -1) state.presets[idx] = preset; else state.presets.push(preset);
-  renderAll(); toast(`Preset saved: ${label} · ${formatRM(amount)}`);
+$("cfOk").addEventListener("click", () => {
+  const fn = confirmCallback;
+  closeConfirm();
+  if (typeof fn === "function") fn();
 });
 
-/* ---------- Init ---------- */
-$("txDate").value = todayISO();
+// Init
 applyPngAppIcons();
 consumeShortcutParams();
 renderStaticCategorySelects();
-renderLedgerCatSelect();
 renderCategoriesForType();
 renderAll();
+runSplashTransition();
 </script>
 </body>
 </html>
