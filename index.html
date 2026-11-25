@@ -37,6 +37,10 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    html, body {
+      touch-action: manipulation;
+    }
+
     body {
       margin: 0;
       padding: 0 0 104px 0;
@@ -44,6 +48,17 @@
       color: var(--text-white);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       line-height: 1.45;
+    }
+
+    button,
+    .preset-btn,
+    .chip,
+    .nav-btn,
+    .switch,
+    .date-field-wrap {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .app {
@@ -1655,6 +1670,19 @@
       outWrap.classList.remove("hidden");
       outEl.textContent = results.join("\n");
     }
+
+    // Prevent double-tap zoom on touch devices while keeping text/number inputs usable
+    let lastTouchEnd = 0;
+    document.addEventListener("touchend", (e) => {
+      const target = e.target;
+      const isTextInput = target && target.closest && target.closest("input[type='text'], input[type='number'], textarea");
+      if (isTextInput) return;
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
 
     // Event bindings
     document.querySelectorAll(".nav-btn").forEach(btn => {
