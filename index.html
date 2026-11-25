@@ -21,9 +21,9 @@
       --bg-card-2: #222228;
       --text-white: #ffffff;
       --text-muted: #9e9ea8;
-      --accent-green: #30d158;
-      --accent-green-glow: rgba(48, 209, 88, 0.55);
-      --accent-green-soft: rgba(48, 209, 88, 0.14);
+      --accent-green: #A9FF3B;
+      --accent-green-glow: rgba(169, 255, 59, 0.55);
+      --accent-green-soft: rgba(169, 255, 59, 0.14);
       --accent-red: #ff453a;
       --accent-red-soft: rgba(255, 69, 58, 0.14);
       --border: rgba(255, 255, 255, 0.1);
@@ -71,8 +71,8 @@
       height: 40px;
       border-radius: 12px;
       background: var(--bg-card);
-      border: 1px solid rgba(48, 209, 88, 0.42);
-      box-shadow: 0 0 16px rgba(48, 209, 88, 0.22);
+      border: 1px solid rgba(169, 255, 59, 0.42);
+      box-shadow: 0 0 16px rgba(169, 255, 59, 0.22);
       display: grid;
       place-items: center;
       flex-shrink: 0;
@@ -122,33 +122,41 @@
       border-color: var(--accent-green);
     }
 
-    /* Fix iOS / WebKit date input alignment */
-    input[type="date"] {
+    /* Custom aligned date field wrapper so iOS Safari never misaligns date text */
+    .date-field-wrap {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      text-align: left;
+      justify-content: space-between;
+      background: var(--bg-card-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-height: 44px;
+      padding: 0 12px;
+    }
+
+    .date-field-wrap:focus-within {
+      border-color: var(--accent-green);
+    }
+
+    .date-display-text {
+      font-size: 14px;
       line-height: 1.2;
-      appearance: none;
-      -webkit-appearance: none;
+      color: var(--text-white);
+      pointer-events: none;
+      user-select: none;
     }
 
-    input[type="date"]::-webkit-datetime-edit {
-      display: flex;
-      align-items: center;
+    .date-native-overlay {
+      position: absolute;
+      inset: 0;
       width: 100%;
-      padding: 0;
-    }
-
-    input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    input[type="date"]::-webkit-date-and-time-value {
-      text-align: left;
-      margin: 0;
+      height: 100%;
+      min-height: 44px;
+      opacity: 0;
+      cursor: pointer;
+      border: none;
+      background: transparent;
     }
 
     .icon-btn {
@@ -178,7 +186,7 @@
 
     .hero-card {
       background: linear-gradient(160deg, #171918 0%, #0d0f0e 100%);
-      border: 1px solid rgba(48, 209, 88, 0.35);
+      border: 1px solid rgba(169, 255, 59, 0.35);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
 
@@ -211,8 +219,8 @@
       margin-top: 12px;
       padding: 10px 12px;
       border-radius: var(--radius-md);
-      background: rgba(48, 209, 88, 0.08);
-      border: 1px solid rgba(48, 209, 88, 0.22);
+      background: rgba(169, 255, 59, 0.08);
+      border: 1px solid rgba(169, 255, 59, 0.22);
       font-size: 13px;
     }
 
@@ -310,13 +318,13 @@
     .btn-glow {
       background: var(--accent-green);
       color: #000000;
-      box-shadow: 0 0 18px var(--accent-green-glow), 0 0 36px rgba(48, 209, 88, 0.25);
+      box-shadow: 0 0 18px var(--accent-green-glow), 0 0 36px rgba(169, 255, 59, 0.25);
       transition: transform 0.16s ease, box-shadow 0.2s ease;
     }
 
     .btn-glow:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 24px rgba(48, 209, 88, 0.78), 0 0 44px rgba(48, 209, 88, 0.35);
+      box-shadow: 0 0 24px rgba(169, 255, 59, 0.78), 0 0 44px rgba(169, 255, 59, 0.35);
     }
 
     .btn-glow:active {
@@ -345,10 +353,10 @@
 
     @keyframes pulseGlow {
       0%, 100% {
-        box-shadow: 0 0 18px rgba(48, 209, 88, 0.5), 0 6px 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 18px rgba(169, 255, 59, 0.5), 0 6px 20px rgba(0, 0, 0, 0.5);
       }
       50% {
-        box-shadow: 0 0 28px rgba(48, 209, 88, 0.85), 0 6px 26px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 0 28px rgba(169, 255, 59, 0.85), 0 6px 26px rgba(0, 0, 0, 0.6);
       }
     }
 
@@ -645,8 +653,8 @@
       <div class="brand-row">
         <div class="app-icon-badge" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <rect x="4" y="4" width="16" height="16" rx="5" stroke="#30d158" stroke-width="1.8"/>
-            <path d="M12 8.5V15.5M8.5 12H15.5" stroke="#30d158" stroke-width="1.8" stroke-linecap="round"/>
+            <rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/>
+            <path d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="brand">
@@ -759,7 +767,14 @@
 
           <div>
             <label class="label-muted" for="txDate">Date</label>
-            <input type="date" id="txDate" required />
+            <div class="date-field-wrap">
+              <span class="date-display-text" id="txDateDisplay"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9e9ea8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+              <input type="date" id="txDate" class="date-native-overlay" required />
+            </div>
           </div>
 
           <div>
@@ -911,7 +926,10 @@
           </div>
           <div>
             <label class="label-muted">Date</label>
-            <input type="date" id="editTxDate" required />
+            <div class="date-field-wrap">
+              <span class="date-display-text" id="editTxDateDisplay"></span>
+              <input type="date" id="editTxDate" class="date-native-overlay" required />
+            </div>
           </div>
         </div>
         <div>
@@ -941,7 +959,10 @@
         <input type="text" id="plTitle" placeholder="Item (e.g. Dental Checkup, Road Tax)" required />
         <div class="row-2">
           <input type="number" id="plAmount" step="0.01" min="0.01" placeholder="Amount (RM)" required />
-          <input type="date" id="plDueDate" required />
+          <div class="date-field-wrap">
+            <span class="date-display-text" id="plDueDateDisplay"></span>
+            <input type="date" id="plDueDate" class="date-native-overlay" required />
+          </div>
         </div>
         <select id="plCategory"></select>
         <div class="toggle-row">
@@ -1009,7 +1030,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "apple_minimal_rm_tracker_v5";
+    const STORAGE_KEY = "apple_minimal_rm_tracker_v6";
 
     const EXPENSE_CATEGORIES = [
       "Food & Beverage",
@@ -1033,6 +1054,23 @@
       "Other Income"
     ];
 
+    const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    function formatDisplayDate(isoStr) {
+      if (!isoStr || !/^\d{4}-\d{2}-\d{2}$/.test(isoStr)) return isoStr || "";
+      const [y, m, d] = isoStr.split("-");
+      const mIdx = Math.max(0, Math.min(11, parseInt(m, 10) - 1));
+      return `${parseInt(d, 10)} ${MONTHS_SHORT[mIdx]} ${y}`;
+    }
+
+    function syncDateDisplay(inputId, displayId) {
+      const inp = document.getElementById(inputId);
+      const disp = document.getElementById(displayId);
+      if (inp && disp) {
+        disp.textContent = formatDisplayDate(inp.value);
+      }
+    }
+
     function generatePngAppIconDataUrl() {
       try {
         const canvas = document.createElement("canvas");
@@ -1044,16 +1082,16 @@
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, 180, 180);
 
-        ctx.strokeStyle = "rgba(48, 209, 88, 0.28)";
+        ctx.strokeStyle = "rgba(169, 255, 59, 0.28)";
         ctx.lineWidth = 3;
         ctx.strokeRect(22, 22, 136, 136);
 
-        ctx.fillStyle = "rgba(48, 209, 88, 0.12)";
+        ctx.fillStyle = "rgba(169, 255, 59, 0.12)";
         ctx.beginPath();
         ctx.arc(90, 90, 44, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = "#30d158";
+        ctx.strokeStyle = "#A9FF3B";
         ctx.lineWidth = 10;
         ctx.lineCap = "round";
         ctx.beginPath();
@@ -1135,6 +1173,7 @@
       try {
         const raw =
           localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem("apple_minimal_rm_tracker_v5") ||
           localStorage.getItem("apple_minimal_rm_tracker_v4") ||
           localStorage.getItem("apple_minimal_rm_tracker_v3") ||
           localStorage.getItem("apple_minimal_rm_tracker_v2");
@@ -1466,6 +1505,9 @@
     function renderAll() {
       saveState();
       document.getElementById("initialFundInput").value = state.initialFund;
+      syncDateDisplay("txDate", "txDateDisplay");
+      syncDateDisplay("editTxDate", "editTxDateDisplay");
+      syncDateDisplay("plDueDate", "plDueDateDisplay");
       renderMonthSelect();
       renderPresets();
       renderDashboard();
@@ -1502,6 +1544,7 @@
       if (!document.getElementById("txDate").value) {
         document.getElementById("txDate").value = todayISO();
       }
+      syncDateDisplay("txDate", "txDateDisplay");
     };
 
     window.deletePreset = function(id) {
@@ -1516,6 +1559,7 @@
       document.getElementById("editTxType").value = tx.type;
       document.getElementById("editTxAmount").value = tx.amount;
       document.getElementById("editTxDate").value = tx.date || todayISO();
+      syncDateDisplay("editTxDate", "editTxDateDisplay");
       document.getElementById("editTxNote").value = tx.note || "";
       document.getElementById("editTxWork").checked = Boolean(tx.work);
       renderEditCategoriesForType(tx.type, tx.category);
@@ -1604,6 +1648,8 @@
       });
       assert(cash === 1300, "Initial fund + income - expense calculates total cash accurately");
 
+      assert(formatDisplayDate("2026-11-25") === "25 Nov 2026", "Display date formats cleanly");
+
       const outWrap = document.getElementById("selfTestOutputWrap");
       const outEl = document.getElementById("selfTestOutput");
       outWrap.classList.remove("hidden");
@@ -1626,6 +1672,10 @@
 
     document.getElementById("txType").addEventListener("change", renderCategoriesForType);
     document.getElementById("txDate").value = todayISO();
+    syncDateDisplay("txDate", "txDateDisplay");
+    document.getElementById("txDate").addEventListener("change", () => syncDateDisplay("txDate", "txDateDisplay"));
+    document.getElementById("editTxDate").addEventListener("change", () => syncDateDisplay("editTxDate", "editTxDateDisplay"));
+    document.getElementById("plDueDate").addEventListener("change", () => syncDateDisplay("plDueDate", "plDueDateDisplay"));
 
     document.getElementById("saveAsPresetBtn").addEventListener("click", () => {
       const amount = parseFloat(document.getElementById("txAmount").value);
@@ -1679,6 +1729,7 @@
       selectedMonth = date.slice(0, 7);
       e.target.reset();
       document.getElementById("txDate").value = todayISO();
+      syncDateDisplay("txDate", "txDateDisplay");
       renderCategoriesForType();
       renderAll();
       switchTab("dashboard");
@@ -1759,6 +1810,7 @@
 
     document.getElementById("addPlannedBtn").addEventListener("click", () => {
       document.getElementById("plDueDate").value = todayISO();
+      syncDateDisplay("plDueDate", "plDueDateDisplay");
       document.getElementById("plannedModal").classList.add("open");
     });
 
