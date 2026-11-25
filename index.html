@@ -15,8 +15,9 @@
 <style>
 :root{--bg-black:#000;--bg-elevated:#111114;--bg-card:#18181c;--bg-card-2:#222228;--text-white:#fff;--text-muted:#9e9ea8;--accent-green:#A9FF3B;--accent-green-soft:rgba(169,255,59,.14);--accent-red:#ff453a;--accent-red-soft:rgba(255,69,58,.14);--border:rgba(255,255,255,.08);--radius-lg:18px;--radius-md:12px;--radius-sm:12px;--fs-s:12px;--fs-m:16px;--fs-xl:32px;--nav-h:60px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html{background:#000}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-body{margin:0;padding:0;position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg-black);color:var(--text-white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:var(--fs-m);line-height:1.35;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+body{margin:0;padding:0;position:fixed;left:0;right:0;top:var(--app-top,0px);height:var(--app-h,100%);transform:translateZ(0);display:flex;flex-direction:column;background:var(--bg-black);color:var(--text-white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:var(--fs-m);line-height:1.35;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
 #scroller{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
 .app{max-width:520px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px 96px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -97,7 +98,7 @@ label{display:block;margin-bottom:6px}
 .modal-backdrop.open{display:flex}
 #confirmModal{z-index:60}
 #cfMsg{white-space:pre-line;margin:0 0 16px}
-.modal{background:rgba(26,26,32,.86);-webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);padding:16px;width:100%;max-width:460px;max-height:85vh;max-height:85dvh;overflow-y:auto}
+.modal{background:rgba(26,26,32,.86);-webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);padding:16px;width:100%;max-width:460px;max-height:calc(var(--app-h,100dvh) * .85);overflow-y:auto}
 pre{background:var(--bg-black);border:1px solid var(--border);padding:10px;border-radius:var(--radius-md);font-size:var(--fs-s);white-space:pre-wrap;word-break:break-all;color:var(--text-muted);margin:0}
 .hidden{display:none !important}
 
@@ -154,7 +155,7 @@ input.calc{color:var(--accent-green);font-weight:600;cursor:pointer;caret-color:
 input.calc::placeholder{color:var(--text-muted);font-weight:400}
 #calcOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:90}
 #calcOverlay.open{display:flex}
-.calc-sheet{width:100%;max-width:520px;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(28,28,34,.72);-webkit-backdrop-filter:blur(28px) saturate(1.6);backdrop-filter:blur(28px) saturate(1.6);border:1px solid rgba(255,255,255,.14);border-bottom:none;border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.6),0 0 18px rgba(169,255,59,.12);animation:sheetUp .22s cubic-bezier(.22,1,.36,1)}
+.calc-sheet{width:100%;max-width:520px;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(28,28,34,.72);-webkit-backdrop-filter:blur(28px) saturate(1.6);backdrop-filter:blur(28px) saturate(1.6);border:1px solid rgba(255,255,255,.14);border-bottom:none;border-radius:24px 24px 0 0;max-height:calc(var(--app-h,100dvh) - 8px);overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.6),0 0 18px rgba(169,255,59,.12);animation:sheetUp .22s cubic-bezier(.22,1,.36,1)}
 @keyframes sheetUp{0%{transform:translateY(40px);opacity:0}100%{transform:translateY(0);opacity:1}}
 .calc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .calc-disp{display:block;min-height:64px;line-height:64px;overflow-x:auto;white-space:nowrap;text-align:right;font-size:36px;font-weight:600;color:#fff;padding:0 6px;scrollbar-width:none}
@@ -163,7 +164,7 @@ input.calc::placeholder{color:var(--text-muted);font-weight:400}
 .calc-disp.empty{color:var(--text-muted)}
 .calc-disp.err{color:var(--accent-red);font-size:28px}
 .calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
-.ck{height:52px;border:none;border-radius:14px;background:rgba(255,255,255,.10);font-size:22px;font-weight:500;cursor:pointer;color:#fff}
+.ck{height:clamp(42px,calc(var(--app-h,800px) * .062),54px);border:none;border-radius:14px;background:rgba(255,255,255,.10);font-size:22px;font-weight:500;cursor:pointer;color:#fff}
 .ck:active{background:rgba(255,255,255,.24)}
 .ck.fn{background:rgba(255,255,255,.18)}
 .ck.op{background:rgba(169,255,59,.16);color:var(--accent-green)}
@@ -396,6 +397,15 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
     </div>
     <button type="button" class="btn btn-ghost btn-sm" id="resetDemoBtn" style="color:var(--accent-red);">Reset to Sample Data</button>
     <div>
+      <div class="label-muted" style="margin-bottom:6px;">Display fix (if bottom bar / keypad is cut off)</div>
+      <div class="row-3">
+        <button type="button" class="btn btn-ghost btn-sm" id="fixMinus">− 8 px</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="fixReset">Auto</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="fixPlus">+ 8 px</button>
+      </div>
+      <pre id="layoutDiag" style="margin-top:8px;"></pre>
+    </div>
+    <div>
       <div class="label-muted" style="margin-bottom:6px;">Apple Shortcuts URL Template</div>
       <pre id="shortcutUrlBox"></pre>
     </div>
@@ -456,17 +466,9 @@ const INCOME_CATEGORIES = ["Salary","Commission & Bonus","Claim Reimbursement","
 const $ = (id) => document.getElementById(id);
 
 /* ---------- Disable double-tap zoom & shared-element launch transition ---------- */
-(function preventDoubleTapZoom() {
-  let lastTouchEnd = 0;
-  document.addEventListener("touchend", (e) => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      e.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
-  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
-})();
+// NOTE: double-tap zoom is already blocked by `touch-action: manipulation` (CSS). The old touchend
+// preventDefault() hack was removed because it cancelled real taps (fast typing on the keypad, nav, buttons).
+document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 
 function playLaunchTransition() {
   const splash = $("appSplash");
@@ -866,6 +868,31 @@ function renderSpark(daily) {     // mini bar chart of daily spending for the se
   }).join("");
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" width="100%" height="${H}">${bars}</svg><div class="spark-meta"><span>Daily spending</span><span>Peak ${formatRM(max)}</span></div>`;
 }
+const LAYOUT_FIX_KEY = "ledger_bottom_fix_v1";
+function getBottomFix() { try { return parseInt(localStorage.getItem(LAYOUT_FIX_KEY) || "0", 10) || 0; } catch { return 0; } }
+function setBottomFix(n) { try { localStorage.setItem(LAYOUT_FIX_KEY, String(n)); } catch {} }
+function measureLayout() {
+  const vv = window.visualViewport, inner = window.innerHeight, vvh = vv ? vv.height : inner;
+  const standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  const portrait = window.innerHeight >= window.innerWidth;
+  const sMax = Math.max(screen.width, screen.height), sMin = Math.min(screen.width, screen.height);
+  let h = Math.min(inner, vvh);
+  if (standalone && sMin <= 600) h = Math.min(h, portrait ? sMax : sMin);   // never taller than the physical screen
+  return { h, top: vv ? Math.max(0, Math.round(vv.offsetTop)) : 0, inner, vvh, standalone, sMax };
+}
+function applyLayout() {
+  const m = measureLayout(), fix = getBottomFix(), h = Math.max(300, Math.round(m.h + fix));
+  const st = document.documentElement.style;
+  st.setProperty("--app-h", h + "px"); st.setProperty("--app-top", m.top + "px");
+  placeNavPill();
+  const diag = $("layoutDiag");
+  if (diag) {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;left:0;bottom:0;width:0;height:env(safe-area-inset-bottom);visibility:hidden";
+    document.body.appendChild(probe); const sb = probe.offsetHeight; probe.remove();
+    diag.textContent = `inner ${Math.round(m.inner)} · visual ${Math.round(m.vvh)} · screen ${m.sMax}\nsafe-bottom ${sb} · app ${h} · fix ${fix >= 0 ? "+" : ""}${fix} · ${m.standalone ? "home-screen" : "browser"}`;
+  }
+}
 function placeNavPill() {
   const pill = $("navPill"), b = document.querySelector(".bottom-nav .nav-btn.active");
   if (!pill || !b) return;
@@ -1039,7 +1066,7 @@ function renderAll() {
 }
 
 /* ---------- Actions ---------- */
-function openSettings() { $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("settingsModal").classList.add("open"); }
+function openSettings() { $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("settingsModal").classList.add("open"); applyLayout(); }
 function openSettingsAndFocusFund() { openSettings(); setTimeout(() => openCalc($("initialFundInput")), 80); }
 function commitInitialFund() {
   const v = parseFloat($("initialFundInput").value);
@@ -1239,6 +1266,9 @@ $("plannedForm").addEventListener("submit", (e) => {
   $("plannedModal").classList.remove("open"); renderAll();
 });
 
+$("fixMinus").addEventListener("click", () => { setBottomFix(getBottomFix() - 8); applyLayout(); });
+$("fixPlus").addEventListener("click", () => { setBottomFix(getBottomFix() + 8); applyLayout(); });
+$("fixReset").addEventListener("click", () => { setBottomFix(0); applyLayout(); toast("Display fix reset"); });
 $("closeSettingsModal").addEventListener("click", () => $("settingsModal").classList.remove("open"));
 $("saveInitialFundBtn").addEventListener("click", commitInitialFund);
 $("runSelfTestBtn").addEventListener("click", runSelfTest);
@@ -1305,9 +1335,14 @@ renderStaticCategorySelects();
 renderLedgerCatSelect();
 renderCategoriesForType();
 renderAll();
-placeNavPill();
-window.addEventListener("resize", placeNavPill);
-window.addEventListener("orientationchange", () => setTimeout(placeNavPill, 200));
+applyLayout();
+[60, 250, 700, 1500].forEach(ms => setTimeout(applyLayout, ms));      // iOS reports the real size late after launch
+window.addEventListener("resize", applyLayout);
+window.addEventListener("orientationchange", () => { applyLayout(); setTimeout(applyLayout, 250); });
+window.addEventListener("pageshow", applyLayout);
+window.addEventListener("focus", applyLayout);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { applyLayout(); setTimeout(applyLayout, 300); } });
+if (window.visualViewport) { window.visualViewport.addEventListener("resize", applyLayout); window.visualViewport.addEventListener("scroll", applyLayout); }
 playLaunchTransition();
 </script>
 </body>
