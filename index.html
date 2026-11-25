@@ -7,8 +7,8 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Welcome！Jeff" />
-  <title>Welcome！Jeff · Personal Expense Tracker</title>
+  <meta name="apple-mobile-web-app-title" content="Ledger · RM" />
+  <title>Ledger · RM</title>
 
   <link id="faviconPng" rel="icon" type="image/png" sizes="180x180" href="" />
   <link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
@@ -67,12 +67,12 @@
     }
 
     .app-icon-badge {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
       background: var(--bg-card);
-      border: 1px solid rgba(48, 209, 88, 0.45);
-      box-shadow: 0 0 18px rgba(48, 209, 88, 0.25);
+      border: 1px solid rgba(48, 209, 88, 0.42);
+      box-shadow: 0 0 16px rgba(48, 209, 88, 0.22);
       display: grid;
       place-items: center;
       flex-shrink: 0;
@@ -80,15 +80,17 @@
 
     .brand h1 {
       margin: 0;
-      font-size: 21px;
+      font-size: 19px;
       font-weight: 700;
       letter-spacing: -0.02em;
     }
 
     .brand p {
-      margin: 1px 0 0;
-      font-size: 15px;
+      margin: 2px 0 0;
+      font-size: 11px;
       font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       color: var(--accent-green);
     }
 
@@ -126,7 +128,6 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      font-size: 16px;
     }
 
     .icon-btn:hover {
@@ -289,16 +290,13 @@
     .fab-glow {
       position: fixed;
       right: 18px;
-      bottom: calc(74px + env(safe-area-inset-bottom));
+      bottom: calc(76px + env(safe-area-inset-bottom));
       width: 54px;
       height: 54px;
       border-radius: 50%;
       border: none;
       background: var(--accent-green);
       color: #000000;
-      font-size: 28px;
-      font-weight: 500;
-      line-height: 1;
       display: grid;
       place-items: center;
       cursor: pointer;
@@ -332,7 +330,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
     }
@@ -340,6 +338,12 @@
     .planned-item:last-child, .recurring-item:last-child, .tx-item:last-child {
       border-bottom: none;
       padding-bottom: 0;
+    }
+
+    .tx-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .progress-track {
@@ -448,8 +452,8 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(14, 14, 17, 0.92);
-      backdrop-filter: blur(16px);
+      background: rgba(12, 12, 15, 0.92);
+      backdrop-filter: blur(18px);
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-around;
@@ -462,12 +466,21 @@
       border: none;
       color: var(--text-muted);
       font-size: 11px;
+      letter-spacing: 0.01em;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       cursor: pointer;
-      padding: 4px 10px;
+      padding: 4px 12px;
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      fill: none;
     }
 
     .nav-btn.active {
@@ -522,18 +535,24 @@
     <header>
       <div class="brand-row">
         <div class="app-icon-badge" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5V19M5 12H19" stroke="#30d158" stroke-width="2.6" stroke-linecap="round"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="4" y="4" width="16" height="16" rx="5" stroke="#30d158" stroke-width="1.8"/>
+            <path d="M12 8.5V15.5M8.5 12H15.5" stroke="#30d158" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
         <div class="brand">
-          <h1>Welcome！</h1>
-          <p>Jeff</p>
+          <h1>JEFF'S LEDGER</h1>
+          <p>PERSONAL CASHFLOW · RM</p>
         </div>
       </div>
       <div class="header-actions">
         <select id="monthSelect" style="width: auto; padding: 7px 10px; font-size: 13px;"></select>
-        <button class="icon-btn" id="openSettingsBtn" title="Settings, Initial Fund & Self-Test">⚙️</button>
+        <button class="icon-btn" id="openSettingsBtn" title="Settings, Initial Fund & Self-Test" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -696,22 +715,99 @@
   </div>
 
   <!-- FLOATING GLOWING ADD BUTTON -->
-  <button class="fab-glow" id="fabAddBtn" title="Quick Add Entry">+</button>
+  <button class="fab-glow" id="fabAddBtn" title="Quick Add Entry" aria-label="Quick Add Entry">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <path d="M12 5V19M5 12H19"/>
+    </svg>
+  </button>
 
-  <!-- BOTTOM NAV -->
+  <!-- MINIMALIST BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-tab="dashboard"><span>📊</span><span>Overview</span></button>
-    <button class="nav-btn" data-tab="log"><span>➕</span><span>Log</span></button>
-    <button class="nav-btn" data-tab="ledger"><span>🧾</span><span>Ledger</span></button>
-    <button class="nav-btn" data-tab="recurring"><span>🔁</span><span>Terms</span></button>
+    <button class="nav-btn active" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="9" rx="2"/>
+        <rect x="14" y="3" width="7" height="5" rx="2"/>
+        <rect x="14" y="12" width="7" height="9" rx="2"/>
+        <rect x="3" y="16" width="7" height="5" rx="2"/>
+      </svg>
+      <span>Overview</span>
+    </button>
+    <button class="nav-btn" data-tab="log">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 8V16M8 12H16"/>
+      </svg>
+      <span>Log</span>
+    </button>
+    <button class="nav-btn" data-tab="ledger">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 4h12v16l-3-2-3 2-3-2-3 2V4z"/>
+        <path d="M9 8h6M9 12h6"/>
+      </svg>
+      <span>Ledger</span>
+    </button>
+    <button class="nav-btn" data-tab="recurring">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 2l4 4-4 4"/>
+        <path d="M3 11v-1a4 4 0 0 1 4-4h14"/>
+        <path d="M7 22l-4-4 4-4"/>
+        <path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+      </svg>
+      <span>Terms</span>
+    </button>
   </nav>
+
+  <!-- EDIT TRANSACTION MODAL -->
+  <div class="modal-backdrop" id="editTxModal">
+    <div class="modal">
+      <div class="section-title">
+        <span>Edit Entry</span>
+        <button type="button" class="btn btn-ghost btn-sm" id="closeEditTxModal">✕</button>
+      </div>
+      <form id="editTxForm" class="form-grid">
+        <input type="hidden" id="editTxId" />
+        <div class="row-2">
+          <div>
+            <label class="label-muted">Type</label>
+            <select id="editTxType">
+              <option value="expense">Expense (-)</option>
+              <option value="income">Income (+)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label-muted">Amount (RM)</label>
+            <input type="number" id="editTxAmount" step="0.01" min="0.01" required />
+          </div>
+        </div>
+        <div class="row-2">
+          <div>
+            <label class="label-muted">Category</label>
+            <select id="editTxCategory"></select>
+          </div>
+          <div>
+            <label class="label-muted">Date</label>
+            <input type="date" id="editTxDate" required />
+          </div>
+        </div>
+        <div>
+          <label class="label-muted">Note / Merchant</label>
+          <input type="text" id="editTxNote" />
+        </div>
+        <div class="toggle-row" id="editWorkToggleWrap">
+          <span style="font-size: 13px;">Work Purpose</span>
+          <input type="checkbox" id="editTxWork" />
+        </div>
+        <button type="submit" class="btn btn-glow">Update Entry</button>
+      </form>
+    </div>
+  </div>
 
   <!-- ADD PLANNED OUTLAY MODAL -->
   <div class="modal-backdrop" id="plannedModal">
     <div class="modal">
       <div class="section-title">
         <span>Add Planned Outlay</span>
-        <button class="btn btn-ghost btn-sm" id="closePlannedModal">✕</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="closePlannedModal">✕</button>
       </div>
       <form id="plannedForm" class="form-grid">
         <input type="text" id="plTitle" placeholder="Item (e.g. Dental Checkup, Road Tax)" required />
@@ -734,7 +830,7 @@
     <div class="modal">
       <div class="section-title">
         <span>Settings · Initial Fund · Backup</span>
-        <button class="btn btn-ghost btn-sm" id="closeSettingsModal">✕</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="closeSettingsModal">✕</button>
       </div>
 
       <div class="form-grid">
@@ -771,7 +867,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "apple_minimal_rm_tracker_v3";
+    const STORAGE_KEY = "apple_minimal_rm_tracker_v4";
 
     const EXPENSE_CATEGORIES = [
       "Food & Beverage",
@@ -806,29 +902,24 @@
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, 180, 180);
 
-        ctx.strokeStyle = "rgba(48, 209, 88, 0.45)";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(12, 12, 156, 156);
+        ctx.strokeStyle = "rgba(48, 209, 88, 0.28)";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(22, 22, 136, 136);
 
-        ctx.fillStyle = "rgba(48, 209, 88, 0.16)";
+        ctx.fillStyle = "rgba(48, 209, 88, 0.12)";
         ctx.beginPath();
-        ctx.arc(90, 84, 42, 0, Math.PI * 2);
+        ctx.arc(90, 90, 44, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.strokeStyle = "#30d158";
-        ctx.lineWidth = 12;
+        ctx.lineWidth = 10;
         ctx.lineCap = "round";
         ctx.beginPath();
-        ctx.moveTo(90, 52);
-        ctx.lineTo(90, 116);
-        ctx.moveTo(58, 84);
-        ctx.lineTo(122, 84);
+        ctx.moveTo(90, 60);
+        ctx.lineTo(90, 120);
+        ctx.moveTo(60, 90);
+        ctx.lineTo(120, 90);
         ctx.stroke();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "700 18px -apple-system, BlinkMacSystemFont, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("JEFF · RM", 90, 152);
 
         return canvas.toDataURL("image/png");
       } catch {
@@ -889,7 +980,10 @@
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("apple_minimal_rm_tracker_v2");
+        const raw =
+          localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem("apple_minimal_rm_tracker_v3") ||
+          localStorage.getItem("apple_minimal_rm_tracker_v2");
         if (!raw) return getDefaultState();
         const parsed = JSON.parse(raw);
         return {
@@ -1021,6 +1115,13 @@
       document.getElementById("workToggleWrap").classList.toggle("hidden", type === "income");
     }
 
+    function renderEditCategoriesForType(type, currentCat) {
+      const list = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+      const sel = document.getElementById("editTxCategory");
+      sel.innerHTML = list.map(c => `<option value="${c}" ${c === currentCat ? "selected" : ""}>${c}</option>`).join("");
+      document.getElementById("editWorkToggleWrap").classList.toggle("hidden", type === "income");
+    }
+
     function renderStaticCategorySelects() {
       const opts = EXPENSE_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join("");
       document.getElementById("plCategory").innerHTML = opts;
@@ -1123,11 +1224,12 @@
             </div>
             <div class="muted" style="font-size: 12px;">${t.date} · ${escapeHtml(t.category)}</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span class="${t.type === "income" ? "green" : ""}" style="font-weight: 700; font-size: 14px;">
+          <div class="tx-actions">
+            <span class="${t.type === "income" ? "green" : ""}" style="font-weight: 700; font-size: 14px; margin-right: 4px;">
               ${t.type === "income" ? "+" : "-"}${formatRM(t.amount)}
             </span>
-            <button class="btn btn-ghost btn-sm" onclick="deleteTx('${t.id}')">✕</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="openEditTx('${t.id}')">Edit</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx('${t.id}')">✕</button>
           </div>
         </div>
       `).join("");
@@ -1202,6 +1304,19 @@
       renderAll();
       document.getElementById("settingsModal").classList.remove("open");
     }
+
+    window.openEditTx = function(id) {
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx) return;
+      document.getElementById("editTxId").value = tx.id;
+      document.getElementById("editTxType").value = tx.type;
+      document.getElementById("editTxAmount").value = tx.amount;
+      document.getElementById("editTxDate").value = tx.date || todayISO();
+      document.getElementById("editTxNote").value = tx.note || "";
+      document.getElementById("editTxWork").checked = Boolean(tx.work);
+      renderEditCategoriesForType(tx.type, tx.category);
+      document.getElementById("editTxModal").classList.add("open");
+    };
 
     window.handlePayPlanned = function(id) {
       const idx = state.planned.findIndex(p => p.id === id);
@@ -1285,9 +1400,6 @@
       });
       assert(cash === 1300, "Initial fund + income - expense calculates total cash accurately");
 
-      const pngIcon = generatePngAppIconDataUrl();
-      assert(pngIcon.startsWith("data:image/png"), "PNG app icon data URL generated for iOS Home Screen");
-
       const outWrap = document.getElementById("selfTestOutputWrap");
       const outEl = document.getElementById("selfTestOutput");
       outWrap.classList.remove("hidden");
@@ -1337,6 +1449,43 @@
       renderCategoriesForType();
       renderAll();
       switchTab("dashboard");
+    });
+
+    document.getElementById("editTxType").addEventListener("change", (e) => {
+      renderEditCategoriesForType(e.target.value, document.getElementById("editTxCategory").value);
+    });
+
+    document.getElementById("closeEditTxModal").addEventListener("click", () => {
+      document.getElementById("editTxModal").classList.remove("open");
+    });
+
+    document.getElementById("editTxForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editTxId").value;
+      const amount = parseFloat(document.getElementById("editTxAmount").value);
+      if (!Number.isFinite(amount) || amount <= 0) return;
+      const idx = state.transactions.findIndex(t => t.id === id);
+      if (idx === -1) return;
+
+      const type = document.getElementById("editTxType").value;
+      const category = document.getElementById("editTxCategory").value;
+      const date = document.getElementById("editTxDate").value || todayISO();
+      const note = document.getElementById("editTxNote").value.trim();
+      const work = type === "expense" && document.getElementById("editTxWork").checked;
+
+      state.transactions[idx] = {
+        ...state.transactions[idx],
+        type,
+        amount,
+        category,
+        date,
+        note,
+        work
+      };
+
+      selectedMonth = date.slice(0, 7);
+      document.getElementById("editTxModal").classList.remove("open");
+      renderAll();
     });
 
     document.querySelectorAll(".chip").forEach(chip => {
