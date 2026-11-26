@@ -238,31 +238,63 @@ input.calc::placeholder{color:#7f8577;font-weight:500}
 /* narrow phones (SE) */
 @media (max-width:360px){.brand p,.app-icon-badge{display:none}.brand h1{font-size:14px}:root{--fs-xl:34px}.stat-val{font-size:14px}.stat-box{padding:10px 8px}.row-actions{grid-column:1/-1;grid-row:3;margin-top:10px}.progress-track{grid-row:4}.cat-row .progress-track{grid-row:auto}}
 @media (max-width:360px){.row-outlook{grid-row:3}.row-outlook~.row-actions{grid-row:4}.row-outlook~.progress-track{grid-row:5}}
-/* shared-element pulse & outward expansion splash (glass logo) */
-#appSplash{position:fixed;inset:0;background:var(--base);display:grid;place-items:center;z-index:100;opacity:1;pointer-events:none;transition:opacity .48s cubic-bezier(.16,1,.3,1)}
+/* ============ MOTION: one "slot reel" language for launch, nav and pages ============ */
+/* launch splash */
+#appSplash{position:fixed;inset:0;background:var(--base);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;z-index:100;pointer-events:none;transition:opacity .34s ease}
 #appSplash.dismissing{opacity:0}
-.splash-logo{position:relative;width:82px;height:82px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.05));border:1.5px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 26px rgba(169,255,59,.28);display:grid;place-items:center;transform:scale(1);opacity:1;transition:transform .56s cubic-bezier(.16,1,.3,1),opacity .44s ease-out,box-shadow .4s ease}
-.splash-logo::before{content:"";position:absolute;inset:-6px;border-radius:28px;border:1.5px solid rgba(169,255,59,.55);opacity:0;transform:scale(.96);pointer-events:none}
-.splash-logo.pulse{animation:logoGentlePulse .44s cubic-bezier(.37,0,.63,1) forwards;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 42px rgba(169,255,59,.58),0 0 76px rgba(169,255,59,.22)}
-.splash-logo.pulse::before{animation:ringBreath .44s cubic-bezier(.22,1,.36,1) forwards}
-.splash-logo.expand-out{transform:scale(4.6);opacity:0;box-shadow:0 0 64px rgba(169,255,59,0)}
-@keyframes logoGentlePulse{0%{transform:scale(.96)}55%{transform:scale(1.07)}100%{transform:scale(1)}}
-@keyframes ringBreath{0%{opacity:0;transform:scale(.94)}50%{opacity:.75;transform:scale(1.26)}100%{opacity:0;transform:scale(1.42)}}
-.app.boot-anim{animation:appReveal .68s cubic-bezier(.16,1,.3,1) backwards}
-@keyframes appReveal{0%{opacity:0;transform:scale(.955) translateY(8px)}45%{opacity:.35}100%{opacity:1;transform:scale(1) translateY(0)}}
-section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
-@keyframes tabIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){#appSplash,.splash-logo,.splash-logo::before,.app.boot-anim,section[id^="tab-"],.calc-sheet{animation:none !important;transition:none !important}}
+.splash-logo{position:relative;width:82px;height:82px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.04));border:1.5px solid rgba(255,255,255,.26);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 28px rgba(169,255,59,.28);display:grid;place-items:center;animation:logoIn .5s cubic-bezier(.2,.9,.25,1.35) backwards;transition:transform .34s cubic-bezier(.5,0,.2,1)}
+.splash-logo::before{content:"";position:absolute;inset:-6px;border-radius:29px;border:1.5px solid rgba(169,255,59,.55);opacity:0;animation:ringOut .6s .62s ease-out}
+.splash-logo svg .plus{transform-origin:12px 12px;animation:plusSpin .7s .08s cubic-bezier(.2,.9,.25,1.2) backwards}
+#appSplash.dismissing .splash-logo{transform:scale(1.35)}
+.splash-word{display:flex;gap:3px;height:28px;overflow:hidden}
+.splash-word .col{display:flex;flex-direction:column;width:19px;transform:translateY(-112px);animation:wordReel .46s cubic-bezier(.2,.85,.3,1.22) both;animation-delay:calc(.14s + var(--i) * 45ms)}
+.splash-word b{height:28px;line-height:28px;text-align:center;font-size:20px;font-weight:800;color:var(--text)}
+.splash-word b:not(:last-child){color:var(--accent);opacity:.45}
+@keyframes logoIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes plusSpin{from{transform:rotate(-180deg)}to{transform:rotate(0)}}
+@keyframes ringOut{0%{opacity:.8;transform:scale(.96)}100%{opacity:0;transform:scale(1.4)}}
+@keyframes wordReel{from{transform:translateY(0)}to{transform:translateY(-112px)}}
+/* app stays hidden under the splash, then cards roll in as it fades */
+.app.booting>*{opacity:0}
+.app.boot-anim>header{animation:cardIn .46s cubic-bezier(.2,.8,.2,1) backwards}
+.app.boot-anim section:not(.hidden) .card{animation:cardIn .52s cubic-bezier(.2,.9,.25,1.12) backwards}
+@keyframes cardIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* page change: slides from the side of the tab you picked, cards slightly staggered */
+#scroller{overflow-x:hidden;overflow-x:clip}
+section.enter .card{animation:pageIn .4s cubic-bezier(.22,1,.36,1) backwards}
+@keyframes pageIn{from{opacity:0;transform:translateX(calc(var(--dir,1) * 28px))}to{opacity:1;transform:translateX(0)}}
+section .card:nth-of-type(2){animation-delay:45ms !important}
+section .card:nth-of-type(3){animation-delay:90ms !important}
+section .card:nth-of-type(4){animation-delay:130ms !important}
+
+/* nav slot reel: window is the existing 48px button; strip scrolls inside it */
+.reel{display:block;width:100%;height:48px;overflow:hidden;pointer-events:none}
+.reel.spinning{-webkit-mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(transparent,#000 22%,#000 78%,transparent)}
+.reel-strip{display:flex;flex-direction:column;will-change:transform}
+.reel-item{flex:0 0 48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.reel-item.off{color:var(--text-muted);font-weight:400}
+.reel-item.on{color:var(--accent);font-weight:600}
+.nav-btn{padding:0 4px}
+/* pill: the box slides (placeNavPill), its skin stretches like liquid */
+.nav-pill{background:none;border:none}
+.nav-pill::before{content:"";position:absolute;inset:0;border-radius:16px;background:var(--accent-soft);border:1px solid rgba(169,255,59,.26)}
+.nav-pill.ready{transition:transform .42s cubic-bezier(.3,1.25,.4,1),width .42s cubic-bezier(.3,1.25,.4,1)}
+.nav-pill.stretch::before{animation:pillStretch .42s ease-out}
+@keyframes pillStretch{0%{transform:scale(1,1)}35%{transform:scale(1.24,.84)}70%{transform:scale(.95,1.04)}100%{transform:scale(1,1)}}
+.fab-glow:active{transform:scale(.92)}
+@media (prefers-reduced-motion:reduce){#appSplash,.splash-logo,.splash-logo::before,.splash-word .col,.splash-logo svg .plus,.app.boot-anim>header,.app.boot-anim .card,section .card,.nav-pill,.nav-pill::before,.calc-sheet{animation:none !important;transition:none !important}}
 </style>
 </head>
 <body>
 <div id="appSplash" aria-hidden="true">
   <div class="splash-logo" id="splashLogo">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/><path d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/><path class="plus" d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/></svg>
   </div>
+  <div class="splash-word"><span class="col" style="--i:0"><b>$</b><b>+</b><b>R</b><b>M</b><b>L</b></span><span class="col" style="--i:1"><b>$</b><b>+</b><b>R</b><b>M</b><b>E</b></span><span class="col" style="--i:2"><b>$</b><b>+</b><b>R</b><b>M</b><b>D</b></span><span class="col" style="--i:3"><b>$</b><b>+</b><b>R</b><b>M</b><b>G</b></span><span class="col" style="--i:4"><b>$</b><b>+</b><b>R</b><b>M</b><b>E</b></span><span class="col" style="--i:5"><b>$</b><b>+</b><b>R</b><b>M</b><b>R</b></span></div>
 </div>
 <main id="scroller">
-<div class="app boot-anim">
+<div class="app booting">
   <header>
     <div class="brand-row">
       <div class="app-icon-badge" aria-hidden="true">
@@ -531,24 +563,62 @@ const $ = (id) => document.getElementById(id);
 // preventDefault() hack was removed because it cancelled real taps (fast typing on the keypad, nav, buttons).
 document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 
+const reducedMotion = () => Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 function playLaunchTransition() {
-  const splash = $("appSplash");
-  const logo = $("splashLogo");
-  if (!splash || !logo) return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    splash.remove();
-    return;
-  }
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      logo.classList.add("pulse");
-      setTimeout(() => {
-        logo.classList.add("expand-out");
-        splash.classList.add("dismissing");
-        setTimeout(() => splash.remove(), 580);
-      }, 420);
-    }, 80);
+  const splash = $("appSplash"), app = document.querySelector(".app");
+  const reveal = () => {
+    app.classList.remove("booting");
+    if (reducedMotion()) return;
+    app.classList.add("boot-anim");
+    ["dashExpense", "dashInitialFund", "dashTotalCash", "dashIncome", "dashNet"].forEach(id => { $(id)._v = 0; });
+    renderDashboard();                       // replay count-up now that it can actually be seen
+    setTimeout(() => app.classList.remove("boot-anim"), 800);
+  };
+  if (!splash || reducedMotion()) { if (splash) splash.remove(); reveal(); return; }
+  setTimeout(() => {
+    splash.classList.add("dismissing");
+    reveal();
+    setTimeout(() => splash.remove(), 380);
+  }, 1050);
+}
+
+/* ---------- Nav slot reel ---------- */
+const REEL_H = 48;
+function initNavReels() {
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.setAttribute("aria-label", btn.textContent.trim());
+    const face = btn.innerHTML;
+    btn.innerHTML = `<span class="reel" aria-hidden="true"><span class="reel-strip"><span class="reel-item">${face}</span></span></span>`;
+    btn._face = face;
   });
+}
+// turns = faces that roll past; dir 1 rolls upward, -1 downward; ends on `end` colour
+function spinReel(btn, dir, turns, end, duration) {
+  const reel = btn.querySelector(".reel"), strip = reel && reel.firstElementChild;
+  if (!strip || !strip.animate || reducedMotion()) return;
+  if (btn._spin) btn._spin.cancel();
+  const start = end === "on" ? "off" : "on";
+  const faces = [start];
+  for (let i = 1; i < turns; i++) faces.push(i % 2 ? end : start);
+  faces.push(end, end);                       // last extra face covers the overshoot
+  const order = dir > 0 ? faces : faces.slice().reverse();
+  strip.innerHTML = order.map(c => `<span class="reel-item ${c}">${btn._face}</span>`).join("");
+  const last = order.length - 1;
+  const from = dir > 0 ? 0 : -last * REEL_H, to = dir > 0 ? -turns * REEL_H : -(last - turns) * REEL_H;
+  const y = (v) => `translateY(${v}px)`;
+  reel.classList.add("spinning");
+  const anim = btn._spin = strip.animate([
+    { transform: y(from), filter: "blur(0)", easing: "cubic-bezier(.45,0,.75,.6)" },
+    { transform: y(from + (to - from) * .5), filter: "blur(1.1px)", offset: .36, easing: "cubic-bezier(.2,.65,.35,1)" },
+    { transform: y(to - dir * 7), filter: "blur(0)", offset: .76, easing: "ease-in-out" },
+    { transform: y(to + dir * 2.5), offset: .9, easing: "ease-out" },
+    { transform: y(to), filter: "blur(0)" }
+  ], { duration, fill: "forwards" });
+  anim.onfinish = () => {                      // collapse back to a single face
+    if (btn._spin !== anim) return;
+    strip.innerHTML = `<span class="reel-item">${btn._face}</span>`;
+    anim.cancel(); btn._spin = null; reel.classList.remove("spinning");
+  };
 }
 
 /* ---------- Icon: frosted-glass (Apple style) on a soft glowing backdrop ---------- */
@@ -1307,11 +1377,25 @@ window.deleteRecurring = (id) => {
   askConfirm("Delete rule?", `${r.title} · ${formatRM(Number(r.amount))}\nPast logged entries stay in the Ledger.`, "Delete", () => { state.recurring = state.recurring.filter(x => x.id !== id); renderAll(); });
 };
 
+let enterTimer;
 function switchTab(tab) {
-  ["dashboard", "log", "ledger", "recurring"].forEach(n => $("tab-" + n).classList.toggle("hidden", n !== tab));
-  document.querySelectorAll(".nav-btn").forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle("active", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  const tabs = ["dashboard", "log", "ledger", "recurring"];
+  const buttons = Array.from(document.querySelectorAll(".nav-btn"));
+  const prevBtn = buttons.find(b => b.classList.contains("active"));
+  const prev = prevBtn ? prevBtn.dataset.tab : tab;
+  const changed = prev !== tab, dir = tabs.indexOf(tab) >= tabs.indexOf(prev) ? 1 : -1;
+  tabs.forEach(n => $("tab-" + n).classList.toggle("hidden", n !== tab));
+  buttons.forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle("active", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("fabAddBtn").classList.toggle("hidden", tab === "log");
   window.scrollTo(0, 0); placeNavPill(); buzz(6);
+  if (!changed) return;                        // re-tapping the current tab only scrolls to top
+  const next = buttons.find(b => b.dataset.tab === tab), pill = $("navPill"), page = $("tab-" + tab);
+  spinReel(next, dir, 4, "on", 620);
+  spinReel(prevBtn, dir, 1, "off", 340);
+  pill.classList.remove("stretch"); void pill.offsetWidth; pill.classList.add("stretch");
+  tabs.forEach(n => $("tab-" + n).classList.remove("enter"));
+  page.style.setProperty("--dir", dir); page.classList.add("enter");
+  clearTimeout(enterTimer); enterTimer = setTimeout(() => page.classList.remove("enter"), 600);   // so re-renders don't replay it
 }
 
 function consumeShortcutParams() {
@@ -1520,6 +1604,7 @@ renderStaticCategorySelects();
 renderLedgerCatSelect();
 renderCategoriesForType();
 renderAll();
+initNavReels();
 placeNavPill();
 window.addEventListener("resize", placeNavPill);
 window.addEventListener("orientationchange", () => setTimeout(placeNavPill, 250));
