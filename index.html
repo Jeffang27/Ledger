@@ -154,6 +154,32 @@ label{display:block;margin-bottom:6px}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 78px);transform:translate(-50%,8px);width:max-content;max-width:calc(100% - 32px);padding:10px 16px;border-radius:999px;background:var(--sec-3);border:1px solid var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* v2: terms summary, available, budget, undo */
+#tab-recurring .card.rec-hero{border-color:rgba(169,255,59,.5);box-shadow:0 0 18px rgba(169,255,59,.14),inset 0 0 18px rgba(169,255,59,.04)}
+.rec-hero .hero-amount{margin-bottom:4px}
+.line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;padding:5px 0}
+.line span{color:var(--text-muted)}.line b{white-space:nowrap}
+.line.total{border-top:1px solid var(--border);margin-top:4px;padding-top:10px;font-size:15px}
+.line.total span{color:var(--text);font-weight:600}
+.box{margin-top:14px;background:var(--sec-1);border:1px solid var(--border);border-radius:14px;padding:10px 12px}
+.box .progress-track{margin:2px 0 8px}
+.progress-fill.over{background:var(--red)}
+details.box summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;list-style:none;min-height:32px;font-size:13px;color:var(--text-muted)}
+details.box summary::-webkit-details-marker{display:none}
+details.box summary b{font-size:17px;color:var(--text);white-space:nowrap}
+details.box summary b.red{color:var(--red)}
+details.box summary span::after{content:" ▾"}
+details.box[open] summary span::after{content:" ▴"}
+.note{font-size:var(--fs-s);color:var(--text-muted);margin-top:6px}
+.notice{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;padding:12px 14px}
+.tag-done{display:inline-block;font-size:var(--fs-xs);font-weight:600;line-height:1.4;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle;background:var(--accent-soft);color:var(--accent)}
+.toast.show.has-action{pointer-events:auto;display:flex;align-items:center;gap:14px;padding:6px 6px 6px 16px}
+.toast button{height:34px;padding:0 14px;border:none;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:13px;font-weight:700}
+
+.row-outlook{grid-column:1/-1;grid-row:3;font-size:var(--fs-s);color:var(--text-muted);margin-top:8px}
+.row-outlook~.progress-track{grid-row:4}
+.sum{flex-wrap:wrap}.sum>span{margin-left:auto}
+
 /* categories */
 .cat-row{margin-bottom:14px}.cat-row:last-child{margin-bottom:0}
 .cat-meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
@@ -211,6 +237,7 @@ input.calc::placeholder{color:#7f8577;font-weight:500}
 
 /* narrow phones (SE) */
 @media (max-width:360px){.brand p,.app-icon-badge{display:none}.brand h1{font-size:14px}:root{--fs-xl:34px}.stat-val{font-size:14px}.stat-box{padding:10px 8px}.row-actions{grid-column:1/-1;grid-row:3;margin-top:10px}.progress-track{grid-row:4}.cat-row .progress-track{grid-row:auto}}
+@media (max-width:360px){.row-outlook{grid-row:3}.row-outlook~.row-actions{grid-row:4}.row-outlook~.progress-track{grid-row:5}}
 /* shared-element pulse & outward expansion splash (glass logo) */
 #appSplash{position:fixed;inset:0;background:var(--base);display:grid;place-items:center;z-index:100;opacity:1;pointer-events:none;transition:opacity .48s cubic-bezier(.16,1,.3,1)}
 #appSplash.dismissing{opacity:0}
@@ -253,6 +280,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
 
   <!-- DASHBOARD -->
   <section id="tab-dashboard">
+    <div id="backupNotice"></div>
     <div class="card hero">
       <div class="hero-top">
         <div>
@@ -262,6 +290,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
         </div>
         <button class="btn btn-tint btn-sm" id="quickAddBtn">+ Add</button>
       </div>
+      <div id="dashBudget"></div>
       <div id="dashSpark" class="spark"></div>
       <div class="stats-grid">
         <button type="button" class="stat-box stat-btn" id="inlineEditFundBtn" title="Tap to edit Initial Fund">
@@ -272,6 +301,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
         <div class="stat-box"><div class="label-muted">Monthly Income</div><div class="stat-val" id="dashIncome">RM 0.00</div></div>
         <div class="stat-box"><div class="label-muted">Monthly Net</div><div class="stat-val" id="dashNet">RM 0.00</div></div>
       </div>
+      <div id="dashAvailable"></div>
     </div>
     <div class="card">
       <div class="section-title"><span>Upcoming Outlays<span class="section-sub" id="plannedSummary"></span></span><button class="btn btn-tint btn-sm" id="addPlannedBtn">+ Add Plan</button></div>
@@ -334,8 +364,9 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
 
   <!-- TERMS -->
   <section id="tab-recurring" class="hidden">
+    <div id="recOverview"></div>
     <div class="card">
-      <div class="section-title"><span>Recurring &amp; Terms<span class="section-sub" id="recSummary"></span></span><button class="btn btn-tint btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
+      <div class="section-title"><span>Recurring &amp; Terms</span><button class="btn btn-tint btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
       <form id="recurringForm" class="form-grid hidden" style="margin-bottom:14px;">
         <input type="hidden" id="recId" />
         <div class="label-muted" id="recFormTitle">New Rule</div>
@@ -415,12 +446,20 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
       </div>
     </div>
     <div>
+      <label class="label-muted" for="budgetInput">Monthly Budget (RM, 0 = off)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="budgetInput" data-label="Monthly Budget (RM)" data-min="0" placeholder="0.00" />
+        <button type="button" class="btn btn-ghost" id="saveBudgetBtn">Save</button>
+      </div>
+    </div>
+    <div>
       <div class="group-label">Backup</div>
       <div class="row-3">
         <button type="button" class="btn btn-ghost btn-sm" id="exportJsonBtn">Export JSON</button>
         <button type="button" class="btn btn-ghost btn-sm" id="exportCsvBtn">Export CSV</button>
         <label class="btn btn-ghost btn-sm" style="text-align:center;margin:0;">Import<input type="file" id="importJsonInput" accept="application/json" class="hidden" /></label>
       </div>
+      <div class="note" id="lastBackupText"></div>
     </div>
     <div class="row-2">
       <button type="button" class="btn btn-ghost btn-sm" id="saveIconBtn">Save Icon PNG</button>
@@ -636,7 +675,7 @@ function normalizeState(d) {
     presets.push({ id: psId(s.id, "ps"), label: str(s.label, "").slice(0, 20), type: s.type, amount, category: str(s.category, s.type === "income" ? "Other Income" : "Others"), note: typeof s.note === "string" ? s.note.slice(0, 200) : "", work: s.type === "expense" && Boolean(s.work) });
   }
   return {
-    data: { initialFund: Math.max(0, Number(d.initialFund) || 0), transactions, planned, recurring, presets: hasPresets ? presets : defaultPresets() },
+    data: { initialFund: Math.max(0, Number(d.initialFund) || 0), budget: Math.max(0, Number(d.budget) || 0), transactions, planned, recurring, presets: hasPresets ? presets : defaultPresets() },
     counts: { tx: transactions.length, planned: planned.length, rec: recurring.length, presets: hasPresets ? presets.length : 0 },
     skipped
   };
@@ -660,6 +699,7 @@ function getDefaultState() {
   const ym = currentYM();
   return {
     initialFund: 0,
+    budget: 0,
     transactions: [
       { id: "t1", type: "income", amount: 3200, category: "Salary", date: `${ym}-01`, note: "Base Salary", work: false },
       { id: "t2", type: "expense", amount: 24.5, category: "Food & Beverage", date: `${ym}-02`, note: "Lunch", work: false },
@@ -855,6 +895,55 @@ function buildCsv(txs) {
   return ["id,type,amount_rm,category,date,work_purpose,note", ...rows].join("\n");
 }
 
+/* ---------- Commitments (recurring rules are treated as monthly) ---------- */
+const sumBy = (list, f) => Math.round(list.reduce((n, x) => n + (Number(f(x)) || 0), 0) * 100) / 100;
+const isFinished = (r) => r.totalTerms > 0 && r.doneTerms >= r.totalTerms;
+const loggedIn = (data, ruleId, ym) => data.transactions.some(t => t.src && t.src.k === "r" && t.src.id === ruleId && (t.date || "").slice(0, 7) === ym);
+function computeRecurringSummary(data, ym) {
+  const active = data.recurring.filter(r => !isFinished(r)), fixed = active.filter(r => r.totalTerms > 0);
+  const ids = new Set(data.recurring.map(r => r.id));
+  const loggedTx = data.transactions.filter(t => t.src && t.src.k === "r" && ids.has(t.src.id) && (t.date || "").slice(0, 7) === ym);
+  // a rule whose final term was logged this month still counts as part of this month
+  const pending = active.filter(r => !loggedIn(data, r.id, ym));
+  return {
+    count: active.length, total: sumBy(active, r => r.amount),
+    work: sumBy(active.filter(r => r.work), r => r.amount), personal: sumBy(active.filter(r => !r.work), r => r.amount),
+    fixedLeft: sumBy(fixed, r => r.amount * (r.totalTerms - r.doneTerms)),
+    openTotal: sumBy(active.filter(r => !r.totalTerms), r => r.amount),
+    logged: sumBy(loggedTx, t => t.amount), pending: sumBy(pending, r => r.amount), pendingCount: pending.length
+  };
+}
+// month in which the last fixed term falls, assuming one term per month
+function endYM(r, thisMonthLogged, ym) {
+  const [y, m] = ym.split("-").map(Number), left = r.totalTerms - r.doneTerms;
+  const d = new Date(y, m - 1 + left - (thisMonthLogged ? 0 : 1), 1);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+}
+// cash on hand minus what is still due by the end of this month (includes overdue plans)
+function computeAvailable(data, ym) {
+  const cash = computeTotalCash(data);
+  const plans = sumBy(data.planned.filter(p => !p.paid && p.dueDate.slice(0, 7) <= ym), p => p.amount);
+  const terms = computeRecurringSummary(data, ym).pending;
+  return { cash, plans, terms, available: Math.round((cash - plans - terms) * 100) / 100 };
+}
+
+/* ---------- Backup tracking (stored separately from ledger data) ---------- */
+const BACKUP_KEY = "ledger_last_backup", SNOOZE_KEY = "ledger_backup_snooze";
+const readKey = (k) => { try { return localStorage.getItem(k) || ""; } catch { return ""; } };
+const writeKey = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const daysSince = (iso) => Math.round((Date.parse(todayISO()) - Date.parse(iso)) / 86400000);
+function renderBackupStatus() {
+  const last = readKey(BACKUP_KEY), snooze = readKey(SNOOZE_KEY);
+  $("lastBackupText").textContent = last ? `Last JSON export: ${fmtD(last)}` : "No JSON export recorded yet.";
+  const due = (!last || daysSince(last) >= 14) && state.transactions.length >= 10 && !(snooze && daysSince(snooze) < 3);
+  $("backupNotice").innerHTML = due ? `<div class="card notice"><span>${last ? `Last backup ${daysSince(last)} days ago` : "Your data has no backup yet"}</span><span style="display:flex;gap:8px"><button type="button" class="btn btn-ghost btn-sm" onclick="snoozeBackup()">Later</button><button type="button" class="btn btn-tint btn-sm" onclick="exportJson()">Export</button></span></div>` : "";
+}
+window.snoozeBackup = () => { writeKey(SNOOZE_KEY, todayISO()); renderBackupStatus(); };
+window.exportJson = () => {
+  downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), `expense-tracker-${todayISO()}.json`);
+  writeKey(BACKUP_KEY, todayISO()); renderBackupStatus();
+};
+
 /* ---------- Confirm dialog ---------- */
 let confirmCb = null;
 function askConfirm(title, msg, okLabel, cb) {
@@ -865,7 +954,17 @@ function askConfirm(title, msg, okLabel, cb) {
   confirmCb = cb; $("confirmModal").classList.add("open");
 }
 function showNotice(title, msg) { askConfirm(title, msg, "OK", null); }
-function toast(msg) { const el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1800); }
+function toast(msg, undo) {
+  const el = $("toast"); el.textContent = ""; const text = document.createElement("span"); text.textContent = msg; el.appendChild(text);
+  const hide = () => el.classList.remove("show", "has-action");
+  if (undo) { const b = document.createElement("button"); b.type = "button"; b.textContent = "Undo"; b.onclick = () => { hide(); undo(); }; el.appendChild(b); }
+  el.classList.toggle("has-action", !!undo); el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(hide, undo ? 6000 : 1800);
+}
+function undoEntry(txId) {
+  const tx = state.transactions.find(t => t.id === txId); if (!tx) return;
+  revertSource(tx); state.transactions = state.transactions.filter(t => t.id !== txId); renderAll(); toast("Undone");
+}
 function closeConfirm() { $("confirmModal").classList.remove("open"); confirmCb = null; }
 
 /* ---------- Render ---------- */
@@ -951,6 +1050,26 @@ function renderDashboard() {
   }
   renderSpark(daily);
 
+  const budget = Number(state.budget) || 0, isNow = selectedMonth === currentYM();
+  if (!budget) $("dashBudget").innerHTML = "";
+  else {
+    const left = Math.round((budget - m.expense) * 100) / 100, used = m.expense / budget * 100;
+    const daysLeft = dim - new Date().getDate() + 1;
+    $("dashBudget").innerHTML = `<div class="box">
+      <div class="line"><span>Budget ${formatRM(budget)} · ${used.toFixed(0)}% used</span><b class="${left < 0 ? "red" : ""}">${left < 0 ? `Over ${formatRM(-left)}` : `${formatRM(left)} left`}</b></div>
+      <div class="progress-track"><div class="progress-fill${left < 0 ? " over" : ""}" style="width:${Math.min(100, used).toFixed(2)}%"></div></div>
+      ${isNow && left > 0 ? `<div class="meta">About ${formatRM(left / daysLeft)} per day for ${daysLeft} ${daysLeft === 1 ? "day" : "days"} incl. today</div>` : ""}</div>`;
+  }
+  // available balance is a "today" figure, so only shown on the current month
+  if (!isNow) $("dashAvailable").innerHTML = "";
+  else {
+    const av = computeAvailable(state, selectedMonth), wasOpen = Boolean($("dashAvailable").querySelector("details[open]"));
+    $("dashAvailable").innerHTML = `<details class="box"${wasOpen ? " open" : ""}><summary><span>Available after dues</span><b class="${av.available < 0 ? "red" : ""}">${formatRM(av.available)}</b></summary>
+      <div class="line"><span>Total Cash</span><b>${formatRM(av.cash)}</b></div>
+      <div class="line"><span>Unpaid plans (to month end)</span><b>− ${formatRM(av.plans)}</b></div>
+      <div class="line"><span>Recurring not logged</span><b>− ${formatRM(av.terms)}</b></div></details>`;
+  }
+
   const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth), pmName = fmtYM(pm);
   const hasPrev = state.transactions.some(t => t.type === "expense" && (t.date || "").slice(0, 7) === pm);
   if (!hasPrev) { badge.className = "mom-badge mom-flat"; badge.textContent = `No spending in ${pmName} to compare`; }
@@ -1010,6 +1129,12 @@ window.usePreset = (id) => {
   toast(`${p.label} · ${formatRM(p.amount)} filled`);
 };
 
+window.exportClaim = () => {   // exports exactly what the Work Only view is showing
+  const r = filterLedger(state, { month: selectedMonth, all: ledgerAll, filter: "work", cat: ledgerCat, q: ledgerQuery });
+  const csv = buildCsv(r.items) + `\n"","TOTAL","${r.expense.toFixed(2)}","","","",""`;
+  downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" }), `work-claim-${ledgerAll ? "all" : selectedMonth}.csv`);
+};
+
 window.clearLedgerFilters = () => {
   ledgerFilter = "all"; ledgerQuery = ""; ledgerCat = ""; ledgerAll = false;
   $("ledgerSearch").value = ""; $("ledgerCat").value = ""; $("ledgerScope").value = "month";
@@ -1026,7 +1151,7 @@ function renderLedger() {
   if (ledgerFilter === "income") main = `<span class="sum-val green">Total in +${formatRM(r.income)}</span>`;
   else if (ledgerFilter === "expense" || ledgerFilter === "work") main = `<span class="sum-val">Total out -${formatRM(r.expense)}</span>`;
   else main = `<span class="sum-val ${net >= 0 ? "green" : "red"}">Net ${net >= 0 ? "+" : "-"}${formatRM(Math.abs(net))}</span>`;
-  $("txSummary").innerHTML = `<div class="sum"><div>${main}<div class="meta">${n} ${n === 1 ? "entry" : "entries"} · In ${formatRM(r.income)} · Out ${formatRM(r.expense)}</div></div>${active ? `<button type="button" class="btn btn-ghost btn-sm" onclick="clearLedgerFilters()">Clear</button>` : ""}</div>`;
+  $("txSummary").innerHTML = `<div class="sum"><div>${main}<div class="meta">${n} ${n === 1 ? "entry" : "entries"} · In ${formatRM(r.income)} · Out ${formatRM(r.expense)}</div></div><span style="display:flex;gap:8px;flex-shrink:0">${ledgerFilter === "work" && n ? `<button type="button" class="btn btn-tint btn-sm" onclick="exportClaim()">Claim CSV</button>` : ""}${active ? `<button type="button" class="btn btn-ghost btn-sm" onclick="clearLedgerFilters()">Clear</button>` : ""}</span></div>`;
   const days = new Map();
   for (const t of r.items) { if (!days.has(t.date)) days.set(t.date, []); days.get(t.date).push(t); }
   const txRow = (t) => `
@@ -1051,21 +1176,40 @@ function renderLedger() {
 
 function renderRecurring() {
   const el = $("recurringList");
-  const live = state.recurring.filter(r => !(r.totalTerms > 0 && r.doneTerms >= r.totalTerms));
-  $("recSummary").textContent = live.length ? `${live.length} active · ${formatRM(live.reduce((n, r) => n + Number(r.amount), 0))} per term` : "";
+  const ym = currentYM(), sm = computeRecurringSummary(state, ym), month = fmtYM(ym);
+  const monthAll = sm.logged + sm.pending, donePct = monthAll > 0 ? Math.min(100, sm.logged / monthAll * 100) : 0;
+  $("recOverview").innerHTML = !state.recurring.length ? "" : `
+    <div class="card rec-hero">
+      <div class="label-muted">Total Recurring · per month</div>
+      <div class="hero-amount">${formatRM(sm.total)}</div>
+      <div class="meta">${sm.count} active ${sm.count === 1 ? "rule" : "rules"}</div>
+      <div class="box">
+        <div class="line"><span>${month} logged</span><b>${formatRM(sm.logged)}</b></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${donePct.toFixed(2)}%"></div></div>
+        <div class="line"><span>Not logged yet (${sm.pendingCount})</span><b>${formatRM(sm.pending)}</b></div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="line"><span>Personal / Work</span><b>${formatRM(sm.personal)} / ${formatRM(sm.work)}</b></div>
+        <div class="line"><span>Open-ended per month</span><b>${formatRM(sm.openTotal)}</b></div>
+        <div class="line total"><span>Left on fixed terms</span><b>${formatRM(sm.fixedLeft)}</b></div>
+      </div>
+    </div>`;
   if (!state.recurring.length) { el.innerHTML = `<div class="empty">No recurring rules yet.</div>`; return; }
   el.innerHTML = state.recurring.map(r => {
     const total = Math.max(0, Number(r.totalTerms) || 0), done = Math.max(0, Number(r.doneTerms) || 0);
     const hasTerms = total > 0, left = hasTerms ? Math.max(0, total - done) : null;
     const pct = hasTerms ? Math.min(100, (done / total) * 100) : 100;
     const finished = hasTerms && done >= total;
+    const logged = loggedIn(state, r.id, currentYM());
+    const outlook = hasTerms && !finished ? `${formatRM(r.amount * left)} left · ends ~${fmtYM(endYM(r, logged, currentYM()))}` : "";
     return `
       <div class="row${finished ? " is-done" : ""}">
         <div class="row-head">
-          <div class="row-title">${escapeHtml(r.title)}${r.work ? `<span class="tag-work">Work</span>` : ""}</div>
+          <div class="row-title">${escapeHtml(r.title)}${r.work ? `<span class="tag-work">Work</span>` : ""}${logged ? `<span class="tag-done">✓ This month</span>` : ""}</div>
           <div class="row-amt">${formatRM(Number(r.amount))}</div>
         </div>
         <div class="row-meta">${hasTerms ? `Done ${done}/${total} (${left} left)` : `Open-ended (${done} logged)`}<br>${escapeHtml(r.category)}</div>
+        ${outlook ? `<div class="row-outlook">${outlook}</div>` : ""}
         ${hasTerms ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>` : ""}
         <div class="row-actions">
           <button class="btn ${finished ? "btn-ghost" : "btn-tint"} btn-sm" ${finished ? "disabled" : ""} onclick="handleLogTerm('${r.id}')">${finished ? "Completed" : "Log 1 Term"}</button>
@@ -1079,13 +1223,14 @@ function renderRecurring() {
 function renderAll() {
   saveState();
   $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2);
-  renderMonthSelect(); renderDashboard(); renderLedger(); renderRecurring(); renderPresets();
+  $("budgetInput").value = Number(state.budget || 0).toFixed(2);
+  renderMonthSelect(); renderDashboard(); renderLedger(); renderRecurring(); renderPresets(); renderBackupStatus();
   const baseUrl = window.location.href.split("#")[0].split("?")[0];
   $("shortcutUrlBox").textContent = `${baseUrl}?type=expense&amount=18.50&category=Food%20%26%20Beverage&note=Lunch&work=0`;
 }
 
 /* ---------- Actions ---------- */
-function openSettings() { $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("settingsModal").classList.add("open"); }
+function openSettings() { $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("budgetInput").value = Number(state.budget || 0).toFixed(2); $("settingsModal").classList.add("open"); }
 function openSettingsAndFocusFund() { openSettings(); setTimeout(() => openCalc($("initialFundInput")), 80); }
 function commitInitialFund() {
   const v = parseFloat($("initialFundInput").value);
@@ -1113,7 +1258,7 @@ window.handlePayPlanned = (id) => {
   const i = state.planned.findIndex(p => p.id === id);
   if (i === -1 || state.planned[i].paid) return;
   const { updatedPlanned, createdTx } = markPlannedPaid(state.planned[i]);
-  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll(); toast(`Paid & logged · ${formatRM(createdTx.amount)}`);
+  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll(); toast(`Paid · ${formatRM(createdTx.amount)}`, () => undoEntry(createdTx.id));
 };
 function openPlannedForm(p) {
   $("plId").value = p ? p.id : "";
@@ -1133,11 +1278,16 @@ window.deletePlanned = (id) => {
 };
 
 window.handleLogTerm = (id) => {
+  const rule = state.recurring.find(r => r.id === id); if (!rule || isFinished(rule)) return;
+  if (loggedIn(state, id, currentYM())) askConfirm("Log another term?", `${rule.title} already has a term logged in ${fmtYM(currentYM())}.`, "Log again", () => logTerm(id));
+  else logTerm(id);
+};
+function logTerm(id) {
   const i = state.recurring.findIndex(r => r.id === id); if (i === -1) return;
   const { updatedRule, createdTx, completed } = applyRecurringTermStep(state.recurring[i]);
   if (completed || !createdTx) return;
-  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll(); toast(`Logged: ${createdTx.note}`);
-};
+  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll(); toast(`Logged: ${createdTx.note}`, () => undoEntry(createdTx.id));
+}
 function openRecForm(r) {
   $("recId").value = r ? r.id : "";
   $("recTitle").value = r ? r.title : "";
@@ -1211,6 +1361,16 @@ function runSelfTest() {
   t(defaultPresets().length > 0, "Default presets exist");
   t(calcEval("2+3×4") === 14 && calcEval("(2+3)×4") === 20 && calcEval("10÷4") === 2.5, "Calculator precedence & brackets");
   t(calcEval("1÷0") === null && calcEval("2+") === null && calcEval("abc") === null, "Calculator rejects invalid formulas");
+  const cm = { initialFund: 1000,
+    transactions: [{ type: "expense", amount: 100, date: "2026-05-03", src: { k: "r", id: "a" } }],
+    planned: [{ amount: 50, dueDate: "2026-04-20", paid: false }, { amount: 70, dueDate: "2026-06-01", paid: false }, { amount: 9, dueDate: "2026-05-09", paid: true }],
+    recurring: [{ id: "a", amount: 100, totalTerms: 12, doneTerms: 4, work: false }, { id: "b", amount: 40, totalTerms: 0, doneTerms: 2, work: true }, { id: "c", amount: 999, totalTerms: 3, doneTerms: 3, work: false }] };
+  const rs = computeRecurringSummary(cm, "2026-05");
+  t(rs.total === 140 && rs.count === 2 && rs.fixedLeft === 800 && rs.openTotal === 40, "Recurring totals skip finished rules");
+  t(rs.logged === 100 && rs.pending === 40, "Recurring logged / pending this month");
+  t(computeAvailable(cm, "2026-05").available === 810, "Available = cash - dues to month end - pending recurring");
+  t(endYM(cm.recurring[0], true, "2026-05") === "2027-01", "Fixed term end month");
+  t(normalizeState({ transactions: [], budget: 1500 }).data.budget === 1500 && normalizeState({ transactions: [] }).data.budget === 0, "Budget survives load; old backups still work");
   $("selfTestOutputWrap").classList.remove("hidden");
   $("selfTestOutput").textContent = out.join("\n");
 }
@@ -1296,7 +1456,12 @@ $("saveIconBtn").addEventListener("click", () => {
   const url = drawIcon(512); if (!url) return;
   const a = document.createElement("a"); a.href = url; a.download = "ledger-icon.png"; document.body.appendChild(a); a.click(); a.remove();
 });
-$("exportJsonBtn").addEventListener("click", () => downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }), `expense-tracker-${todayISO()}.json`));
+$("exportJsonBtn").addEventListener("click", () => exportJson());
+$("saveBudgetBtn").addEventListener("click", () => {
+  const v = parseFloat($("budgetInput").value);
+  state.budget = Number.isFinite(v) && v >= 0 ? v : 0;
+  renderAll(); $("settingsModal").classList.remove("open"); toast(state.budget ? `Budget saved · ${formatRM(state.budget)}` : "Budget off");
+});
 $("exportCsvBtn").addEventListener("click", () => downloadBlob(new Blob(["\ufeff" + buildCsv(state.transactions)], { type: "text/csv;charset=utf-8;" }), `expense-tracker-${todayISO()}.csv`));
 
 $("importJsonInput").addEventListener("change", (e) => {
