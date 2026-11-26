@@ -484,6 +484,10 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
         <button type="button" class="btn btn-ghost" id="saveBudgetBtn">Save</button>
       </div>
     </div>
+    <label class="toggle-row">
+      <span><span style="display:block;font-weight:600;">Sound Effects</span><span class="meta">Save, Paid and Undo</span></span>
+      <input type="checkbox" id="soundToggle" />
+    </label>
     <div>
       <div class="group-label">Backup</div>
       <div class="row-3">
@@ -1014,6 +1018,72 @@ window.exportJson = () => {
   writeKey(BACKUP_KEY, todayISO()); renderBackupStatus();
 };
 
+/* ---------- Sound effects (synthesised with Web Audio, no audio files) ---------- */
+const SOUND_KEY = "ledger_sound";                 // device preference, kept out of ledger data / backups
+let soundOn = readKey(SOUND_KEY) !== "off", audioCtx = null;
+// each tone: at/dur in seconds, f -> to = pitch glide (reached after `glide`), peak = gain
+const SOUNDS = {                                    // one family: Save & Paid land on A5, Undo steps down to A4
+  // Save: E5 flicks up to A5, one clean drop, ~95ms
+  save: [
+    { type: "sine",     f: 659.25, to: 880, glide: .032, at: 0, dur: .095, peak: .125, attack: .005 },
+    { type: "triangle", f: 659.25, to: 880, glide: .032, at: 0, dur: .06,  peak: .022, attack: .005 },
+    { type: "sine",     f: 1760,                         at: .028, dur: .035, peak: .016, attack: .004 }
+  ],
+  // Paid: "tok-tung" D5 then A5, soft wooden attack, second note rests on a low body, ~155ms
+  paid: [
+    { type: "sine", f: 587.33, at: 0,    dur: .06,  peak: .12,  attack: .003 },
+    { type: "sine", f: 2290,   at: 0,    dur: .018, peak: .018, attack: .0015 },
+    { type: "sine", f: 880,    at: .064, dur: .092, peak: .125, attack: .004 },
+    { type: "sine", f: 440,    at: .064, dur: .092, peak: .038, attack: .006 },
+    { type: "sine", f: 3432,   at: .064, dur: .016, peak: .012, attack: .0015 }
+  ],
+  // Undo: E5 slides back to A4, slow soft attack, quietest, ~110ms
+  undo: [
+    { type: "sine",     f: 659.25, to: 440, glide: .08, at: 0, dur: .112, peak: .084, attack: .016 },
+    { type: "triangle", f: 659.25, to: 440, glide: .08, at: 0, dur: .09,  peak: .01,  attack: .018 }
+  ]
+};
+function renderSound(ctx, name, t0) {
+  for (const n of SOUNDS[name]) {
+    const osc = ctx.createOscillator(), gain = ctx.createGain(), a = t0 + n.at, end = a + n.dur;
+    osc.type = n.type;
+    osc.frequency.setValueAtTime(n.f, a);
+    if (n.to) osc.frequency.exponentialRampToValueAtTime(n.to, a + n.glide);
+    gain.gain.setValueAtTime(0, a);
+    gain.gain.linearRampToValueAtTime(n.peak, a + n.attack);
+    gain.gain.exponentialRampToValueAtTime(.001, end - .004);
+    gain.gain.linearRampToValueAtTime(0, end);                 // end at true zero = no click
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(a); osc.stop(end + .01);
+  }
+}
+function getAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!audioCtx || audioCtx.state === "closed") {
+    // "ambient": mix with the user's music instead of interrupting it (where supported)
+    try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch {}
+    audioCtx = new AC();
+  }
+  return audioCtx;
+}
+function playSound(name) {                          // sound must never break saving
+  if (!soundOn) return;
+  try {
+    const ctx = getAudio(); if (!ctx) return;
+    const go = () => renderSound(ctx, name, ctx.currentTime + .01);
+    if (ctx.state === "running") { go(); return; }
+    const asked = Date.now();                       // iOS suspends audio after backgrounding
+    ctx.resume().then(() => { if (Date.now() - asked < 400) go(); }).catch(() => {});
+  } catch {}
+}
+// iOS only lets audio start from a touch, so wake it on taps before it's needed
+function unlockAudio() {
+  if (!soundOn) return;
+  try { const ctx = getAudio(); if (ctx && ctx.state !== "running") ctx.resume().catch(() => {}); } catch {}
+}
+["touchend", "click"].forEach(ev => document.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+
 /* ---------- Confirm dialog ---------- */
 let confirmCb = null;
 function askConfirm(title, msg, okLabel, cb) {
@@ -1033,7 +1103,7 @@ function toast(msg, undo) {
 }
 function undoEntry(txId) {
   const tx = state.transactions.find(t => t.id === txId); if (!tx) return;
-  revertSource(tx); state.transactions = state.transactions.filter(t => t.id !== txId); renderAll(); toast("Undone");
+  revertSource(tx); state.transactions = state.transactions.filter(t => t.id !== txId); renderAll(); toast("Undone"); playSound("undo");
 }
 function closeConfirm() { $("confirmModal").classList.remove("open"); confirmCb = null; }
 
@@ -1328,7 +1398,7 @@ window.handlePayPlanned = (id) => {
   const i = state.planned.findIndex(p => p.id === id);
   if (i === -1 || state.planned[i].paid) return;
   const { updatedPlanned, createdTx } = markPlannedPaid(state.planned[i]);
-  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll(); toast(`Paid · ${formatRM(createdTx.amount)}`, () => undoEntry(createdTx.id));
+  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll(); toast(`Paid · ${formatRM(createdTx.amount)}`, () => undoEntry(createdTx.id)); playSound("paid");
 };
 function openPlannedForm(p) {
   $("plId").value = p ? p.id : "";
@@ -1356,7 +1426,7 @@ function logTerm(id) {
   const i = state.recurring.findIndex(r => r.id === id); if (i === -1) return;
   const { updatedRule, createdTx, completed } = applyRecurringTermStep(state.recurring[i]);
   if (completed || !createdTx) return;
-  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll(); toast(`Logged: ${createdTx.note}`, () => undoEntry(createdTx.id));
+  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll(); toast(`Logged: ${createdTx.note}`, () => undoEntry(createdTx.id)); playSound("save");
 }
 function openRecForm(r) {
   $("recId").value = r ? r.id : "";
@@ -1479,7 +1549,7 @@ $("txForm").addEventListener("submit", (e) => {
   const type = $("txType").value, date = $("txDate").value || todayISO();
   state.transactions.push({ id: uid("tx"), type, amount, category: $("txCategory").value, date, note: $("txNote").value.trim(), work: type === "expense" && $("txWork").checked });
   selectedMonth = date.slice(0, 7);
-  e.target.reset(); $("txDate").value = todayISO(); renderCategoriesForType(); renderAll(); switchTab("dashboard"); toast(`Saved · ${formatRM(amount)}`);
+  e.target.reset(); $("txDate").value = todayISO(); renderCategoriesForType(); renderAll(); switchTab("dashboard"); toast(`Saved · ${formatRM(amount)}`); playSound("save");
 });
 
 $("editTxType").addEventListener("change", (e) => renderEditCategoriesForType(e.target.value, $("editTxCategory").value));
@@ -1606,6 +1676,11 @@ renderCategoriesForType();
 renderAll();
 initNavReels();
 placeNavPill();
+$("soundToggle").checked = soundOn;
+$("soundToggle").addEventListener("change", (e) => {
+  soundOn = e.target.checked; writeKey(SOUND_KEY, soundOn ? "on" : "off");
+  if (soundOn) playSound("save");                  // preview when switched on
+});
 window.addEventListener("resize", placeNavPill);
 window.addEventListener("orientationchange", () => setTimeout(placeNavPill, 250));
 playLaunchTransition();
