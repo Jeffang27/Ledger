@@ -74,6 +74,15 @@ label{display:block}
 .btn-glow,.btn-green{background:var(--accent);color:var(--on-accent)}
 .btn-tint{background:var(--accent-soft);color:var(--accent)}
 .btn-ghost{background:var(--sec-2)}
+#goalDetailModal .row-2 .btn{transition:background .18s,color .18s,transform .1s}
+:root{--hold:.9s}
+.hold-btn{overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:background .18s,color .18s,transform .18s}
+.hold-btn .hold-fill{position:absolute;inset:0;background:currentColor;opacity:.2;transform:scaleX(0);transform-origin:left center;transition:transform .22s ease-out;pointer-events:none}
+.hold-btn .hold-label{position:relative;z-index:1}
+.hold-btn.holding{transform:scale(.97)}
+.hold-btn.holding .hold-fill{transform:scaleX(1);transition:transform var(--hold) linear}
+@media (prefers-reduced-motion:reduce){.hold-btn.holding{transform:none}}
+.chip.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:650}
 .btn-danger{background:var(--red-fill);color:#fff}
 .btn-danger-ghost{background:transparent;color:var(--red)}
 .btn-text{background:none;color:var(--text-muted);font-size:14px;height:40px}
@@ -364,6 +373,10 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 .nav-pill.stretch::before{animation:pillStretch .42s ease-out}
 @keyframes pillStretch{0%{transform:scale(1,1)}35%{transform:scale(1.24,.84)}70%{transform:scale(.95,1.04)}100%{transform:scale(1,1)}}
 .fab-glow:active{transform:scale(.92)}
+.fab-glow .fab-ico-rule,.fab-glow .fab-label{display:none}
+.fab-glow.rule{width:auto;height:52px;padding:0 20px 0 16px;border-radius:18px;display:flex;align-items:center;gap:9px}
+.fab-glow.rule .fab-ico-add{display:none}.fab-glow.rule .fab-ico-rule{display:block}
+.fab-glow.rule .fab-label{display:inline;font-size:15px;font-weight:650;letter-spacing:.1px;color:var(--on-accent)}
 @media (prefers-reduced-motion:reduce){#appSplash,.splash-logo,.splash-logo::before,.splash-word .col,.splash-logo svg .plus,.app.boot-anim>header,.app.boot-anim .card,section .card,.nav-pill,.nav-pill::before,.calc-sheet{animation:none !important;transition:none !important}}
 
 .pie-card{display:flex;gap:20px;align-items:center;justify-content:center;margin:12px 0;padding:16px}
@@ -516,7 +529,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 
   <section id="tab-recurring" class="hidden">
     <div id="recOverview"></div>
-    <div class="head"><h2>Recurring &amp; Terms</h2><button type="button" class="btn btn-tint btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
+    <div class="head"><h2>Recurring &amp; Terms</h2></div>
     <div class="card" id="recurringList"></div>
     <p class="hint">Tap the circle to log a term · tap a row to edit</p>
   </section>
@@ -524,7 +537,9 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 </main>
 
 <button class="fab-glow" id="fabAddBtn" title="Quick Add Entry" aria-label="Quick Add Entry">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5V19M5 12H19"/></svg>
+  <svg class="fab-ico-add" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5V19M5 12H19"/></svg>
+  <svg class="fab-ico-rule" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/><path d="M12 9v6M9 12h6" stroke-width="2.2"/></svg>
+  <span class="fab-label">Add Rule</span>
 </button>
 
 <nav class="bottom-nav">
@@ -612,8 +627,8 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <div class="label-muted" id="gdCash" style="margin-bottom:6px"></div>
     <div id="gdQuick" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
     <input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="gdAmount" data-label="Amount (RM)" placeholder="Amount (RM)" aria-label="Amount" />
-    <div class="row-2"><button type="button" class="btn btn-ghost" id="gdTake">Take out</button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
-    <p class="note" style="margin:0;text-align:center">This only sets money aside. It is not logged as an expense.</p>
+    <div class="row-2"><button type="button" class="btn btn-ghost hold-btn" id="gdTake" aria-label="Take out, press and hold to confirm"><span class="hold-fill" aria-hidden="true"></span><span class="hold-label" id="gdTakeLabel">Take out</span></button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
+    <p class="note" id="gdNote" style="margin:0;text-align:center">This only sets money aside. It is not logged as an expense.</p>
     <div id="gdHistory"></div>
   </div>
 </div></div>
@@ -1368,6 +1383,21 @@ function renderGoals() {
   if ($("goalDetailModal").classList.contains("open")) renderGoalDetail();
 }
 let activeGoal = "";
+// Which action is the "main" one in the goal sheet: Add by default; picking "Take out all" flips the emphasis so a mis-tap can't add money
+let gdMode = "add", gdPick = "", gdQuickList = [];
+function paintGdMode() {
+  const take = gdMode === "take";
+  $("gdTake").classList.toggle("btn-glow", take); $("gdTake").classList.toggle("btn-ghost", !take);
+  $("gdAdd").classList.toggle("btn-glow", !take); $("gdAdd").classList.toggle("btn-ghost", take);
+  $("gdTakeLabel").textContent = take ? "Hold to take out" : "Take out";
+  $("gdNote").textContent = take ? "Press and hold Take out to confirm. The money goes back to Total Cash, not logged as income." : "This only sets money aside. It is not logged as an expense.";
+  document.querySelectorAll("#gdQuick .chip").forEach(c => c.classList.toggle("active", !!gdQuickList[c.dataset.q] && gdQuickList[c.dataset.q][0] === gdPick));
+}
+window.pickGoalQuick = (i) => {
+  const q = gdQuickList[i]; if (!q) return;
+  $("gdAmount").value = q[1].toFixed(2); gdPick = q[0]; gdMode = q[2] ? "take" : "add"; paintGdMode(); buzz(6);
+};
+function resetGdMode() { gdMode = "add"; gdPick = ""; }
 const findGoal = (id) => state.goals.find(g => g.id === id);
 function renderGoalDetail() {
   const g = findGoal(activeGoal); if (!g) { $("goalDetailModal").classList.remove("open"); return; }
@@ -1377,13 +1407,16 @@ function renderGoalDetail() {
     <div class="stat-val">${formatRM(p.saved)}</div><div class="label-muted">of ${formatRM(g.target)} · by ${fmtD(g.date)}</div><div class="label-muted">${paceText(g, p)}</div>`;
   const free = computeFreeCash(state), quick = [];
   $("gdCash").textContent = free >= 0 ? `Total Cash now: ${formatRM(free)}` : `Total Cash is ${formatRM(free)} · log income to cover it`;
-  if (p.perMonth) quick.push([`Monthly ${formatRM(p.perMonth)}`, p.perMonth]);
-  if (p.left > 0) quick.push([`Fill to target ${formatRM(p.left)}`, p.left]);
-  if (p.saved > 0) quick.push([`Take out all ${formatRM(p.saved)}`, p.saved]);
-  $("gdQuick").innerHTML = quick.map(([l, v]) => `<button type="button" class="chip" onclick="$('gdAmount').value='${v.toFixed(2)}'">${l}</button>`).join("");
+  if (p.perMonth) quick.push([`Monthly ${formatRM(p.perMonth)}`, p.perMonth, false]);
+  if (p.left > 0) quick.push([`Fill to target ${formatRM(p.left)}`, p.left, false]);
+  if (p.saved > 0) quick.push([`Take out all ${formatRM(p.saved)}`, p.saved, true]);
+  gdQuickList = quick;
+  if (gdPick && !quick.some(q => q[0] === gdPick)) { gdPick = ""; gdMode = "add"; }   // the chip is gone (balance changed): back to the safe default
+  $("gdQuick").innerHTML = quick.map(([l], i) => `<button type="button" class="chip" data-q="${i}" onclick="pickGoalQuick(${i})">${l}</button>`).join("");
+  paintGdMode();
   $("gdHistory").innerHTML = !g.history.length ? "" : `<div class="label-muted" style="margin-bottom:6px">History</div><div class="hist">${g.history.slice().reverse().map(h => `<div class="line"><span>${fmtD(h.date)}</span><div><b class="${h.amount > 0 ? "green" : ""}">${h.amount > 0 ? "+" : "−"}${formatRM(Math.abs(h.amount))}</b><button type="button" aria-label="Remove this record" onclick="removeGoalRecord('${h.id}')"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>`).join("")}</div>`;
 }
-window.openGoal = (id) => { $("toast").classList.remove("show", "has-action"); activeGoal = id; $("gdAmount").value = ""; renderGoalDetail(); $("goalDetailModal").classList.add("open"); };
+window.openGoal = (id) => { $("toast").classList.remove("show", "has-action"); activeGoal = id; $("gdAmount").value = ""; resetGdMode(); renderGoalDetail(); $("goalDetailModal").classList.add("open"); };
 function openGoalForm(g) {
   $("goalId").value = g ? g.id : ""; $("goalName").value = g ? g.name : ""; $("goalTarget").value = g ? g.target.toFixed(2) : "";
   const later = new Date(); later.setMonth(later.getMonth() + 6, 1);
@@ -1412,7 +1445,7 @@ function moveGoalMoney(sign) {
   const rec = { id: uid("gh"), amount: sign * amount, date: todayISO() }, goalRef = g.id;
   g.history.push(rec);
   const reached = syncGoalReached(g, todayISO());
-  $("gdAmount").value = ""; $("goalDetailModal").classList.remove("open"); renderAll();
+  $("gdAmount").value = ""; resetGdMode(); $("goalDetailModal").classList.remove("open"); renderAll();
   if (reached) { celebrate(g); return; }
   const short = sign > 0 && computeFreeCash(state) < 0;
   toast(sign > 0 ? `Saved to ${g.name} · ${formatRM(amount)} out of Total Cash${short ? " (now negative, add income or Initial Fund)" : ""}` : `Took out ${formatRM(amount)} · back in Total Cash`, () => {
@@ -1674,10 +1707,18 @@ function accentHue() {            // hue of the current theme accent, so the pal
   const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
   return (h * 60 + 360) % 360;
 }
+const DAY_PIE = [[14, "#C77A62"], [38, "#CBA24F"], [76, "#93A65C"], [150, "#5E9F84"], [188, "#4F9AA3"], [220, "#6F8FC8"], [262, "#9783C5"], [330, "#B97E9C"]];   // muted earth tones, one chroma/lightness family, sit calmly on cream
+function dayPieColor(i) {          // slice 0 is the accent; the rest come from the palette, skipping hues too close to the accent
+  const h = accentHue(), far = DAY_PIE.filter(([x]) => { const d = Math.abs(x - h) % 360; return Math.min(d, 360 - d) >= 40; });
+  const L = far.length, step = [3, 2, 1].find(k => k < L && (function g(a, b) { return b ? g(b, a % b) : a; })(L, k) === 1) || 1;
+  const k = i - 1, base = far[(k * step) % L][1];
+  return k >= L ? `color-mix(in srgb, ${base} 72%, #fff)` : base;
+}
 function pieColor(cat, i, n) {    // biggest slice = theme accent, the rest = soft tones of equal weight, "Others" = neutral
   if (cat === "Others") return isDay() ? "#A39785" : "#7d8574";
   if (i === 0) return "var(--accent)";
-  return `hsl(${Math.round((accentHue() + i * Math.min(70, 330 / n)) % 360)} 58% ${isDay() ? 52 : 66}%)`;
+  if (isDay()) return dayPieColor(i);
+  return `hsl(${Math.round((accentHue() + i * Math.min(70, 330 / n)) % 360)} 58% 66%)`;
 }
 let _pieCtx;
 const compactRM = (v) => { const a = Math.abs(v); return a >= 1e9 ? `RM ${(v / 1e9).toFixed(2)}B` : a >= 1e6 ? `RM ${(v / 1e6).toFixed(2)}M` : a >= 1e5 ? `RM ${(v / 1e3).toFixed(1)}k` : a >= 1e4 ? `RM ${(v / 1e3).toFixed(2)}k` : formatRM(v); };
@@ -1914,6 +1955,8 @@ function switchTab(tab) {
   tabs.forEach(n => $("tab-" + n).classList.toggle("hidden", n !== tab));
   buttons.forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle("active", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("fabAddBtn").classList.toggle("hidden", tab === "log");
+  $("fabAddBtn").classList.toggle("rule", tab === "recurring");
+  { const fl = tab === "recurring" ? "Add Rule" : "Quick Add Entry"; $("fabAddBtn").title = fl; $("fabAddBtn").setAttribute("aria-label", fl); }
   if (tab === "ledger" && changed) { pieSig = ""; renderLedgerPie(); }
   window.scrollTo(0, 0); placeNavPill(); buzz(6);
   if (!changed) return;                        // re-tapping the current tab only scrolls to top
@@ -2003,7 +2046,7 @@ function runSelfTest() {
 
 /* ---------- Events ---------- */
 document.addEventListener("click", (e) => {      // runs before the button's own handler
-  if (e.target.closest("#openSettingsBtn,#addGoalBtn,#addPlannedBtn,#toggleRecurringFormBtn,.item-main")) $("toast").classList.remove("show", "has-action");
+  if (e.target.closest("#openSettingsBtn,#addGoalBtn,#addPlannedBtn,.item-main")) $("toast").classList.remove("show", "has-action");
 }, true);
 function deleteFromSheet(sheetId, idField, remove) {
   remove($(idField).value);
@@ -2029,7 +2072,35 @@ $("closeGoalModal").addEventListener("click", () => $("goalModal").classList.rem
 $("closeGoalDetail").addEventListener("click", () => $("goalDetailModal").classList.remove("open"));
 $("gdEdit").addEventListener("click", () => { const g = findGoal(activeGoal); if (!g) return; $("goalDetailModal").classList.remove("open"); openGoalForm(g); });
 $("gdAdd").addEventListener("click", () => moveGoalMoney(1));
-$("gdTake").addEventListener("click", () => moveGoalMoney(-1));
+(function holdToTake() {              // Take out must be pressed and held: a second, deliberate confirmation
+  const btn = $("gdTake"), HOLD = 900;
+  let timer = 0, t0 = 0, done = false;
+  const okToStart = () => {
+    const g = findGoal(activeGoal); if (!g) return false;
+    const amount = parseFloat($("gdAmount").value);
+    if (!Number.isFinite(amount) || amount <= 0) { toast("Enter an amount first"); return false; }
+    if (amount > goalSaved(g)) { toast(`Only ${formatRM(goalSaved(g))} saved in this goal`); return false; }
+    return true;
+  };
+  const start = () => {
+    if (timer || !okToStart()) return;
+    done = false; t0 = performance.now(); btn.classList.add("holding"); buzz(10);
+    timer = setTimeout(() => { timer = 0; done = true; btn.classList.remove("holding"); buzz([18, 40, 18]); moveGoalMoney(-1); }, HOLD);
+  };
+  const cancel = () => {
+    if (!timer) return;
+    clearTimeout(timer); timer = 0; btn.classList.remove("holding");
+    if (performance.now() - t0 < 350) toast("Press and hold Take out to confirm");   // a quick tap: explain, don't just do nothing
+  };
+  btn.style.setProperty("--hold", HOLD + "ms");
+  btn.addEventListener("pointerdown", (e) => { if (e.button) return; e.preventDefault(); start(); });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => btn.addEventListener(ev, cancel));
+  btn.addEventListener("contextmenu", (e) => e.preventDefault());
+  btn.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); start(); } });
+  btn.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === " ") cancel(); });
+  btn.addEventListener("blur", cancel);
+  btn.addEventListener("click", (e) => e.preventDefault());
+})();
 $("goalForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const name = $("goalName").value.trim(), target = parseFloat($("goalTarget").value), date = $("goalDate").value, id = $("goalId").value;
@@ -2059,7 +2130,7 @@ document.querySelectorAll(".day-chip").forEach(b => b.addEventListener("click", 
 $("txDate").addEventListener("change", syncDayChips);
 document.querySelectorAll(".nav-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
 $("quickAddBtn").addEventListener("click", () => switchTab("log"));
-$("fabAddBtn").addEventListener("click", () => switchTab("log"));
+$("fabAddBtn").addEventListener("click", () => { if ($("fabAddBtn").classList.contains("rule")) openRecForm(null); else switchTab("log"); });
 $("inlineEditFundBtn").addEventListener("click", openSettingsAndFocusFund);
 $("openSettingsBtn").addEventListener("click", openSettings);
 $("monthSelect").addEventListener("change", (e) => { selectedMonth = e.target.value; renderAll(); });
@@ -2097,7 +2168,6 @@ document.querySelectorAll("[data-filter]").forEach(chip => chip.addEventListener
   chip.classList.add("active"); ledgerFilter = chip.dataset.filter; renderLedger();
 }));
 
-$("toggleRecurringFormBtn").addEventListener("click", () => openRecForm(null));
 $("closeRecModal").addEventListener("click", () => $("recModal").classList.remove("open"));
 $("recurringForm").addEventListener("submit", (e) => {
   e.preventDefault();
