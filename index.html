@@ -12,9 +12,9 @@
 <title>Ledger · RM</title>
 <link id="faviconPng" rel="icon" type="image/png" sizes="180x180" href="" />
 <link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
-<script>try{var t=localStorage.getItem("ledger_theme");if(t==="ocean"||t==="amber")document.documentElement.dataset.theme=t}catch(e){}</script>
+<script>try{var d=document.documentElement,t=localStorage.getItem("ledger_theme"),m=localStorage.getItem("ledger_mode");if(t==="day"){m=m||"day";t="lime"}if(t==="ocean"||t==="amber")d.dataset.theme=t;if(m==="day"||(m!=="dark"&&matchMedia("(prefers-color-scheme: light)").matches)){d.dataset.mode="day";document.querySelector('meta[name="theme-color"]').content="#F5EFE4";document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content="default"}}catch(e){}</script>
 <style>
-/* ===== CALM LEDGER · 60 black canvas / 30 tinted surfaces / 10 accent · themes: Lime, Ocean, Amber ===== */
+/* ===== CALM LEDGER · 60 black canvas / 30 tinted surfaces / 10 accent · themes: Lime, Ocean, Amber · modes: Dark, Day ===== */
 :root{--base:#000;--surface:#11130e;--surface-rgb:17,19,14;--sec-1:#181b14;--sec-2:#22261c;--sec-3:#30362a;
 --line-rgb:236,255,210;--line:rgba(var(--line-rgb),.08);--border:rgba(var(--line-rgb),.08);--border-strong:rgba(var(--line-rgb),.14);
 --text:#f6f8f2;--text-muted:#9ca392;--text-soft:#cdd4c2;--ph:#767d6d;--ph-dim:#4c5343;--chev:#656c5c;--press:#454c3b;
@@ -391,6 +391,33 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 .pie-leg button.on em,.pie-leg button.on .pp{font-weight:700}
 @media(max-width:360px){.pie-card{flex-direction:column;align-items:stretch}.pie-wrap{align-self:center}.pie-leg{max-width:none}}
 @media (prefers-reduced-motion:reduce){.pie-sweep{animation:none !important;stroke-dashoffset:0 !important}.pie-leg button{animation:none !important}.pie-seg{transition:none !important}}
+/* Day mode: neutral light base shared by all colours; each colour only changes the accent */
+:root[data-mode="day"]{color-scheme:light;--base:#F5EFE4;--surface:#FFFCF6;--surface-rgb:255,252,246;--sec-1:#F0E9DB;--sec-2:#E7DECB;--sec-3:#D8CCB5;--line-rgb:70,48,22;--border-strong:rgba(var(--line-rgb),.14);
+--text:#241E15;--text-muted:#6A5F50;--text-soft:#463D2F;--ph:#857868;--ph-dim:#C6B9A3;--chev:#9C8F7B;--press:#D6C9B2;
+--accent:#1E7A4C;--accent-rgb:30,122,76;--accent-soft:rgba(var(--accent-rgb),.10);--accent-dim:#4DA97B;--accent-deep:#A8D5BC;--on-accent:#ffffff;
+--red:#C9303C;--red-fill:#C9303C;--red-soft:rgba(201,48,60,.09)}
+:root[data-mode="day"][data-theme="ocean"]{--accent:#2B63C6;--accent-rgb:43,99,198;--accent-dim:#6592DA;--accent-deep:#B1C7EC;--on-accent:#ffffff}
+:root[data-mode="day"][data-theme="amber"]{--accent:#7A4AC2;--accent-rgb:122,74,194;--accent-dim:#A07EDA;--accent-deep:#D2C2EE;--on-accent:#ffffff}
+:root[data-mode="day"] .card,:root[data-mode="day"] .group,:root[data-mode="day"] .tile:not(.active),:root[data-mode="day"] .search,:root[data-mode="day"] .filter-sel,:root[data-mode="day"] #txList>.empty{box-shadow:0 1px 2px rgba(70,48,22,.06),0 4px 14px rgba(70,48,22,.05)}
+:root[data-mode="day"] .hero{box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.2),0 4px 14px rgba(70,48,22,.06)}
+:root[data-mode="day"] .notice{box-shadow:inset 0 0 0 1px var(--accent-line)}
+:root[data-mode="day"] .month-sel,:root[data-mode="day"] .icon-btn,:root[data-mode="day"] .seg{background-color:var(--sec-2)}
+:root[data-mode="day"] .seg button.active{background:#FFFCF6;box-shadow:0 1px 3px rgba(70,48,22,.14)}
+:root[data-mode="day"] input[type=checkbox]::after{box-shadow:0 1px 3px rgba(0,0,0,.25)}
+:root[data-mode="day"] input[type=date]::-webkit-calendar-picker-indicator{filter:none;opacity:.6}
+:root[data-mode="day"] .fab-glow{box-shadow:0 6px 18px rgba(var(--accent-rgb),.3)}
+:root[data-mode="day"] .save-bar::before{background:linear-gradient(transparent,rgba(245,239,228,.94) 40%)}
+:root[data-mode="day"] .save-bar .btn-glow{box-shadow:0 8px 20px rgba(var(--accent-rgb),.28)}
+:root[data-mode="day"] .modal-backdrop,:root[data-mode="day"] #calcOverlay{background:rgba(44,30,12,.34)}
+:root[data-mode="day"] .sheet,:root[data-mode="day"] .calc-sheet{box-shadow:0 -10px 40px rgba(44,30,12,.18)}
+:root[data-mode="day"] .toast{background:#FFFCF6;box-shadow:0 8px 28px rgba(44,30,12,.2),0 0 0 1px var(--border)}
+:root[data-mode="day"] #celebrate{background:rgba(245,239,228,.95)}
+:root[data-mode="day"] .theme-picker i{box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+:root[data-mode="day"] .splash-logo{background:#FFFCF6;border-color:rgba(var(--accent-rgb),.25);box-shadow:0 10px 30px rgba(var(--accent-rgb),.22)}
+:root[data-mode="day"] .bottom-nav{box-shadow:0 -4px 16px rgba(70,48,22,.06)}
+.theme-picker i.sw-lime{background:#A9FF3B}.theme-picker i.sw-ocean{background:#4CC9FF}.theme-picker i.sw-amber{background:#FFB547}
+:root[data-mode="day"] .theme-picker i.sw-lime{background:#1E7A4C}:root[data-mode="day"] .theme-picker i.sw-ocean{background:#2B63C6}:root[data-mode="day"] .theme-picker i.sw-amber{background:#7A4AC2}
+.theme-picker .n-day{display:none}:root[data-mode="day"] .theme-picker .n-day{display:inline}:root[data-mode="day"] .theme-picker .n-dark{display:none}
 </style>
 </head>
 <body>
@@ -603,11 +630,17 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
       <div class="inline"><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="initialFundInput" data-label="Initial Fund (RM)" data-min="0" placeholder="0.00" /><button type="button" class="btn btn-glow" id="saveInitialFundBtn">Save</button></div></div>
     <div><label class="label-muted" for="budgetInput">Monthly Budget (RM, 0 = off)</label>
       <div class="inline"><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="budgetInput" data-label="Monthly Budget (RM)" data-min="0" placeholder="0.00" /><button type="button" class="btn btn-ghost" id="saveBudgetBtn">Save</button></div></div>
-    <div class="group-label">Theme</div>
+    <div class="group-label">Appearance</div>
+    <div><div class="seg" id="modePicker" role="group" aria-label="Appearance">
+      <button type="button" data-mode-opt="auto">Auto</button>
+      <button type="button" data-mode-opt="dark">Dark</button>
+      <button type="button" data-mode-opt="day">Day</button>
+    </div><div class="note" id="modeNote"></div></div>
+    <div class="group-label">Colour</div>
     <div class="theme-picker" id="themePicker" role="group" aria-label="Theme">
-      <button type="button" data-theme="lime"><i style="background:#A9FF3B"></i>Lime</button>
-      <button type="button" data-theme="ocean"><i style="background:#4CC9FF"></i>Ocean</button>
-      <button type="button" data-theme="amber"><i style="background:#FFB547"></i>Amber</button>
+      <button type="button" data-theme="lime"><i class="sw-lime"></i><span class="n-dark">Lime</span><span class="n-day">Green</span></button>
+      <button type="button" data-theme="ocean"><i class="sw-ocean"></i><span class="n-dark">Ocean</span><span class="n-day">Blue</span></button>
+      <button type="button" data-theme="amber"><i class="sw-amber"></i><span class="n-dark">Amber</span><span class="n-day">Violet</span></button>
     </div>
     <div class="group-label">Preferences</div>
     <label class="toggle-row"><span><span style="font-weight:600">Sound Effects</span><span class="meta">Save, Paid, Undo and Goal reached</span></span><input type="checkbox" id="soundToggle" /></label>
@@ -1269,15 +1302,35 @@ const THEMES = {
   ocean: { accent: "#4CC9FF", rgb: "76,201,255", bg: "#071219", b2: "90,120,255", b3: "60,230,200" },
   amber: { accent: "#FFB547", rgb: "255,181,71", bg: "#150f05", b2: "255,110,70", b3: "255,225,120" }
 };
+const MODE_KEY = "ledger_mode", MODES = ["auto", "dark", "day"];
+const systemLight = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+const oldDay = readKey(THEME_KEY) === "day";                       // previous version stored Day as a theme
 let currentTheme = THEMES[readKey(THEME_KEY)] ? readKey(THEME_KEY) : "lime";
+let currentMode = MODES.includes(readKey(MODE_KEY)) ? readKey(MODE_KEY) : oldDay ? "day" : "auto";
+if (oldDay) { writeKey(THEME_KEY, currentTheme); writeKey(MODE_KEY, currentMode); }
+const isDay = () => currentMode === "day" || (currentMode === "auto" && !!systemLight && systemLight.matches);
+function paintAppearance() {
+  const root = document.documentElement, day = isDay();
+  if (day) root.dataset.mode = "day"; else delete root.dataset.mode;
+  document.querySelector('meta[name="theme-color"]').content = day ? "#F5EFE4" : "#000000";
+  document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content = day ? "default" : "black-translucent";
+  document.querySelectorAll("#modePicker button").forEach(b => { const on = b.dataset.modeOpt === currentMode; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on); });
+  $("modeNote").textContent = currentMode === "auto" ? `Follows your phone · now ${day ? "Day" : "Dark"}` : "";
+  if (pieSig) renderLedgerPie();                                   // slice colours depend on mode + colour
+}
 function applyTheme(id, persist) {
   if (!THEMES[id]) id = "lime";
   currentTheme = id;
   if (id === "lime") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = id;
   if (persist) writeKey(THEME_KEY, id);
+  paintAppearance();
   applyPngAppIcons();
   document.querySelectorAll("#themePicker button").forEach(b => { const on = b.dataset.theme === id; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on); });
 }
+$("modePicker").addEventListener("click", (e) => { const b = e.target.closest("[data-mode-opt]"); if (b) { currentMode = b.dataset.modeOpt; writeKey(MODE_KEY, currentMode); paintAppearance(); buzz(8); } });
+const followSystem = () => { if (currentMode === "auto") paintAppearance(); };
+if (systemLight) { if (systemLight.addEventListener) systemLight.addEventListener("change", followSystem); else if (systemLight.addListener) systemLight.addListener(followSystem); }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) followSystem(); });
 $("themePicker").addEventListener("click", (e) => { const b = e.target.closest("[data-theme]"); if (b) { applyTheme(b.dataset.theme, true); buzz(8); } });
 applyTheme(currentTheme);
 
@@ -1613,7 +1666,7 @@ window.clearLedgerFilters = () => {
   renderLedger();
 };
 
-let pieSig = "", pieData = { rows: [], total: 0 };
+var pieSig = "", pieData = { rows: [], total: 0 };
 function accentHue() {            // hue of the current theme accent, so the palette follows the theme
   const [r, g, b] = (getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb") || "169,255,59").split(",").map(x => (+x || 0) / 255);
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
@@ -1622,9 +1675,9 @@ function accentHue() {            // hue of the current theme accent, so the pal
   return (h * 60 + 360) % 360;
 }
 function pieColor(cat, i, n) {    // biggest slice = theme accent, the rest = soft tones of equal weight, "Others" = neutral
-  if (cat === "Others") return "#7d8574";
+  if (cat === "Others") return isDay() ? "#A39785" : "#7d8574";
   if (i === 0) return "var(--accent)";
-  return `hsl(${Math.round((accentHue() + i * Math.min(70, 330 / n)) % 360)} 58% 66%)`;
+  return `hsl(${Math.round((accentHue() + i * Math.min(70, 330 / n)) % 360)} 58% ${isDay() ? 52 : 66}%)`;
 }
 let _pieCtx;
 const compactRM = (v) => { const a = Math.abs(v); return a >= 1e9 ? `RM ${(v / 1e9).toFixed(2)}B` : a >= 1e6 ? `RM ${(v / 1e6).toFixed(2)}M` : a >= 1e5 ? `RM ${(v / 1e3).toFixed(1)}k` : a >= 1e4 ? `RM ${(v / 1e3).toFixed(2)}k` : formatRM(v); };
@@ -1674,7 +1727,7 @@ function renderLedgerPie() {      // expenses by category for the chosen period 
   if (!rows.length) { el.innerHTML = ""; pieSig = ""; return; }
   if (rows.length > 8) { const rest = rows.slice(7).reduce((n, r) => n + r[1], 0); rows = [...rows.slice(0, 7), ["Others", rest]]; }
   pieData = { rows, total };
-  const sig = (ledgerAll ? "all" : selectedMonth) + "|" + rows.map(r => r[0] + ":" + r[1].toFixed(2)).join(",") + "|" + accentHue().toFixed(0);
+  const sig = (ledgerAll ? "all" : selectedMonth) + "|" + rows.map(r => r[0] + ":" + r[1].toFixed(2)).join(",") + "|" + accentHue().toFixed(0) + (isDay() ? "d" : "n");
   if (sig === pieSig && el.querySelector(".pie-seg")) { syncPie(false); return; }   // same data: just update selection
   pieSig = sig;
   const n = rows.length, cols = rows.map(([c], i) => pieColor(c, i, n));
