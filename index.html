@@ -366,30 +366,30 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 .fab-glow:active{transform:scale(.92)}
 @media (prefers-reduced-motion:reduce){#appSplash,.splash-logo,.splash-logo::before,.splash-word .col,.splash-logo svg .plus,.app.boot-anim>header,.app.boot-anim .card,section .card,.nav-pill,.nav-pill::before,.calc-sheet{animation:none !important;transition:none !important}}
 
-.pie-card{display:flex;gap:18px;align-items:center;margin:12px 0;padding:16px 14px 16px 16px}
-.pie-wrap{position:relative;width:140px;height:140px;flex-shrink:0}
+.pie-card{display:flex;gap:20px;align-items:center;justify-content:center;margin:12px 0;padding:16px}
+.pie-wrap{position:relative;width:148px;height:148px;flex-shrink:0}
 .pie-wrap svg{display:block;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
-.pie-track{fill:none;stroke:var(--sec-2);stroke-width:5}
-.pie-seg{fill:none;stroke-width:5;cursor:pointer;transition:opacity .3s ease,stroke-width .3s cubic-bezier(.3,1.4,.5,1)}
+.pie-track{fill:none;stroke:var(--sec-2);stroke-width:4.6}
+.pie-seg{fill:none;stroke-width:4.6;cursor:pointer;transition:opacity .3s ease,stroke-width .3s cubic-bezier(.3,1.4,.5,1)}
 .pie-seg.dim{opacity:.2}
-.pie-seg.sel{stroke-width:6.6}
+.pie-seg.sel{stroke-width:5.8}
 .pie-sweep{stroke-dashoffset:100;animation:pieSweep 1s cubic-bezier(.22,1,.36,1) .12s forwards}
 @keyframes pieSweep{to{stroke-dashoffset:0}}
-.pie-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0 26px;text-align:center;pointer-events:none}
+.pie-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 20px;text-align:center;pointer-events:none}
 .pie-mid span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-muted)}
-.pie-mid b{max-width:100%;white-space:nowrap;font-size:14.5px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
-.pie-leg{flex:1;min-width:0;display:grid;gap:2px}
+.pie-mid b{white-space:nowrap;font-size:15px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.pie-leg{flex:1 1 auto;min-width:0;max-width:280px;display:grid;gap:2px}
 .pie-leg button{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;column-gap:10px;row-gap:1px;width:100%;min-width:0;padding:7px 8px;border:0;border-radius:11px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background .25s,opacity .25s;animation:pieRow .5s cubic-bezier(.22,1,.36,1) backwards;animation-delay:calc(var(--i) * 55ms + 160ms)}
 @keyframes pieRow{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .pie-leg button:active{background:var(--sec-1)}
 .pie-leg button.on{background:var(--accent-soft)}
 .pie-leg button.dim{opacity:.45}
 .pie-leg i{grid-row:1;width:8px;height:8px;border-radius:50%}
-.pie-leg em{font-style:normal;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pie-leg .pp{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
-.pie-leg small{grid-column:2/-1;color:var(--text-muted);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pie-leg em{grid-column:2/-1;grid-row:1;font-style:normal;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pie-leg .pp{grid-column:3;grid-row:2;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.pie-leg small{grid-column:2;grid-row:2;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--text-muted);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pie-leg button.on em,.pie-leg button.on .pp{font-weight:700}
-@media(max-width:360px){.pie-card{flex-direction:column;align-items:stretch}.pie-wrap{align-self:center}}
+@media(max-width:360px){.pie-card{flex-direction:column;align-items:stretch}.pie-wrap{align-self:center}.pie-leg{max-width:none}}
 @media (prefers-reduced-motion:reduce){.pie-sweep{animation:none !important;stroke-dashoffset:0 !important}.pie-leg button{animation:none !important}.pie-seg{transition:none !important}}
 </style>
 </head>
@@ -1626,11 +1626,21 @@ function pieColor(cat, i, n) {    // biggest slice = theme accent, the rest = so
   if (i === 0) return "var(--accent)";
   return `hsl(${Math.round((accentHue() + i * Math.min(70, 330 / n)) % 360)} 58% 66%)`;
 }
+let _pieCtx;
+const compactRM = (v) => { const a = Math.abs(v); return a >= 1e9 ? `RM ${(v / 1e9).toFixed(2)}B` : a >= 1e6 ? `RM ${(v / 1e6).toFixed(2)}M` : a >= 1e5 ? `RM ${(v / 1e3).toFixed(1)}k` : a >= 1e4 ? `RM ${(v / 1e3).toFixed(2)}k` : formatRM(v); };
+function fitCenter(el, to) {      // pick a font size (and full / compact text) so the amount always sits inside the hole
+  _pieCtx = _pieCtx || document.createElement("canvas").getContext("2d");
+  const wrap = el.closest(".pie-wrap"), W = (wrap && wrap.clientWidth) || 148, maxW = W * 0.52, base = 16;   // hole minus stroke, with margin
+  const fam = getComputedStyle(el).fontFamily, measure = (str) => { _pieCtx.font = `700 ${base}px ${fam}`; return _pieCtx.measureText(str.replace(/\d/g, "0")).width * 1.06; };   // tabular digits are all as wide as a 0
+  let compact = false, size = Math.min(16, base * maxW / measure(formatRM(to)));
+  if (size < 12.5) { compact = true; size = Math.min(16, base * maxW / measure(compactRM(to))); }
+  return { compact, size: Math.max(9.5, size) };
+}
 function tweenText(el, to, ms) {
-  const from = el._v || 0; el._v = to; cancelAnimationFrame(el._r);
-  el.style.fontSize = formatRM(to).length > 11 ? "12.5px" : "";
-  if (!ms || from === to || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) { el.textContent = formatRM(to); return; }
-  const t0 = performance.now(), step = (t) => { const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); el.textContent = formatRM(from + (to - from) * e); if (p < 1) el._r = requestAnimationFrame(step); };
+  const from = el._v || 0, { compact, size } = fitCenter(el, to), fmt = (v) => compact ? compactRM(v) : formatRM(v);
+  el._v = to; cancelAnimationFrame(el._r); el.style.fontSize = size.toFixed(1) + "px"; el.title = formatRM(to);
+  if (!ms || from === to || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) { el.textContent = fmt(to); return; }
+  const t0 = performance.now(), step = (t) => { const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(p < 1 ? from + (to - from) * e : to); if (p < 1) el._r = requestAnimationFrame(step); };
   el._r = requestAnimationFrame(step);
 }
 function syncPie(first) {         // selection state only: no re-render, so slices ease between states
@@ -2146,4 +2156,3 @@ if (!state.name && !readKey(WELCOME_KEY)) { $("welcomeFundWrap").classList.toggl
 </script>
 </body>
 </html>
-
