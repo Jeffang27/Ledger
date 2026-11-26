@@ -193,6 +193,59 @@ details summary{list-style:none;cursor:pointer}details summary::-webkit-details-
 .rec-hero summary{font-size:13px;color:var(--text-muted);padding:12px 0 2px;display:flex;justify-content:space-between}
 .rec-hero summary::after{content:"▾"}.rec-hero details[open] summary::after{content:"▴"}
 
+/* editable name */
+.eyebrow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand{flex:1}
+.brand h1{white-space:normal;overflow-wrap:anywhere}
+.brand h1.long{font-size:22px}
+@media (max-width:360px){.brand h1.long{font-size:18px}}
+#welcomeModal{z-index:70;align-items:center;padding:20px}
+#welcomeModal .sheet{max-width:360px;border-radius:28px;padding:24px 20px 18px;text-align:center}
+#welcomeModal .sheet::before{display:none}
+.welcome-mark{width:64px;height:64px;margin:0 auto 14px;border-radius:20px;display:grid;place-items:center;background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.welcome-mark svg{width:34px;height:34px}
+#welcomeModal h2{margin:0 0 6px;font-size:24px}
+#welcomeModal label{text-align:left;margin-bottom:6px}
+
+.x-ico{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;vertical-align:-2px}
+
+/* saving goals */
+.goal{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.goal:last-child{border-bottom:none}
+.goal .item-main{gap:14px;padding:14px 0}
+.ring{--p:0;flex-shrink:0;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p) * 1%),var(--sec-2) 0)}
+.ring i{width:43px;height:43px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700}
+.ring.big{width:132px;height:132px;margin:0 auto 12px}.ring.big i{width:112px;height:112px;font-size:26px}
+.goal .item-sub b{color:var(--text);font-weight:650}
+.goal .pace{color:var(--accent)}.goal .pace.late{color:var(--red)}
+.goal-add{flex-shrink:0}
+.goal-empty{padding:18px 4px;text-align:center}
+.goal-summary{text-align:center;margin-bottom:6px}
+.goal-summary .stat-val{font-size:20px}
+.hist{max-height:190px;overflow-y:auto;background:var(--sec-1);border-radius:14px;padding:2px 14px}
+.hist .line{align-items:center;border-bottom:1px solid var(--line)}.hist .line:last-child{border-bottom:none}
+.hist .line>div{display:flex;align-items:center;gap:10px}
+.hist button{background:none;border:none;color:var(--text-muted);width:32px;height:32px;cursor:pointer}
+
+/* goal reached */
+#celebrate{position:fixed;inset:0;z-index:110;display:none;place-items:center;padding:24px;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#celebrate.open{display:grid}
+.cele-box{position:relative;text-align:center;max-width:320px;width:100%}
+.cele-medal{position:relative;width:120px;height:120px;margin:0 auto 22px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;box-shadow:0 0 60px rgba(169,255,59,.45);animation:medalIn .6s .05s cubic-bezier(.2,.9,.25,1.4) backwards}
+.cele-medal svg{width:58px;height:58px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;animation:drawTick .45s .34s ease-out backwards}
+.cele-medal::before,.cele-medal::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);opacity:0;animation:ringOut2 1s .32s ease-out}
+.cele-medal::after{animation-delay:.52s}
+.cele-box h2{margin:0 0 6px;font-size:28px;animation:cardIn .45s .32s backwards}
+.cele-box p{margin:0 0 22px;color:var(--text-muted);white-space:pre-line;animation:cardIn .45s .42s backwards}
+.cele-box .btn{animation:cardIn .45s .52s backwards}
+.spark-bit{position:absolute;left:50%;top:60px;width:7px;height:7px;border-radius:2px;background:var(--accent);opacity:0;animation:burst .95s .3s cubic-bezier(.15,.7,.3,1) forwards}
+.spark-bit:nth-of-type(3n){background:#f6f8f2}.spark-bit:nth-of-type(3n+1){background:#6f9f35}
+@keyframes medalIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes drawTick{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+@keyframes ringOut2{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(220deg)}}
+@media (prefers-reduced-motion:reduce){#celebrate *,#celebrate *::before,#celebrate *::after{animation:none !important}.spark-bit{display:none}}
+
 /* backup notice */
 .notice{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;font-size:13px;box-shadow:inset 0 0 0 1px var(--accent-line)}
 .notice>span:last-child{display:flex;gap:6px}
@@ -306,8 +359,8 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 <div class="app booting">
   <header>
     <div class="brand">
-      <div class="eyebrow">JEFF'S LEDGER</div>
-      <h1 id="pageTitle">Hey Jeff</h1>
+      <div class="eyebrow" id="brandName">MY LEDGER</div>
+      <h1 id="pageTitle">Hey there</h1>
     </div>
     <div class="header-actions">
       <select id="monthSelect" class="month-sel" aria-label="Month"></select>
@@ -339,9 +392,12 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
       </div>
     </div>
 
+    <div class="head"><h2>Saving goals<span class="sub" id="goalSummary"></span></h2><button type="button" class="btn btn-tint btn-sm" id="addGoalBtn">+ New Goal</button></div>
+    <div class="card" id="goalList"></div>
+
     <div class="head"><h2>To pay<span class="sub" id="plannedSummary"></span></h2><button type="button" class="btn btn-tint btn-sm" id="addPlannedBtn">+ Add Plan</button></div>
     <div class="card" id="plannedList"></div>
-    <p class="hint">Tap ○ to mark paid · tap a row to edit</p>
+    <p class="hint">Tap the circle to mark paid · tap a row to edit</p>
 
     <div class="head"><h2>Where it went</h2></div>
     <div class="card" id="categoryBreakdown"></div>
@@ -362,7 +418,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
         <label class="field"><span>Note</span><input type="text" id="txNote" aria-label="Note or merchant" placeholder="Lunch, Petrol…" /></label>
         <label class="toggle-row" id="workToggleWrap"><span><span style="font-size:15px;font-weight:600">Work Purpose</span><span class="meta">Mark if related to work / business claim</span></span><input type="checkbox" id="txWork" /></label>
       </div>
-      <button type="button" class="btn btn-text" id="savePresetBtn">☆ Save as preset</button>
+      <button type="button" class="btn btn-text" id="savePresetBtn">Save as preset</button>
       <div class="save-bar"><button type="submit" class="btn btn-glow btn-block">Save Entry</button></div>
     </form>
   </section>
@@ -389,7 +445,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <div id="recOverview"></div>
     <div class="head"><h2>Recurring &amp; Terms</h2><button type="button" class="btn btn-tint btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
     <div class="card" id="recurringList"></div>
-    <p class="hint">Tap ＋ to log a term · tap a row to edit</p>
+    <p class="hint">Tap the circle to log a term · tap a row to edit</p>
   </section>
 </div>
 </main>
@@ -408,7 +464,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 
 <!-- EDIT TX MODAL -->
 <div class="modal-backdrop" id="editTxModal"><div class="sheet">
-  <div class="section-title"><span>Edit Entry</span><button type="button" class="btn btn-sm close" id="closeEditTxModal">✕</button></div>
+  <div class="section-title"><span>Edit Entry</span><button type="button" class="btn btn-sm close" id="closeEditTxModal" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <form id="editTxForm" class="form-grid">
     <input type="hidden" id="editTxId" />
     <div class="seg" data-seg="editTxType" role="group" aria-label="Type"><button type="button" data-v="expense" class="active">Expense (-)</button><button type="button" data-v="income">Income (+)</button></div>
@@ -427,7 +483,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 
 <!-- PLANNED MODAL (add + edit) -->
 <div class="modal-backdrop" id="plannedModal"><div class="sheet">
-  <div class="section-title"><span id="plModalTitle">Add Planned Outlay</span><button type="button" class="btn btn-sm close" id="closePlannedModal">✕</button></div>
+  <div class="section-title"><span id="plModalTitle">Add Planned Outlay</span><button type="button" class="btn btn-sm close" id="closePlannedModal" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <form id="plannedForm" class="form-grid">
     <input type="hidden" id="plId" />
     <input type="text" id="plTitle" placeholder="Item (e.g. Dental Checkup, Road Tax)" required />
@@ -443,7 +499,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 </div></div>
 
 <div class="modal-backdrop" id="recModal"><div class="sheet">
-  <div class="section-title"><span id="recFormTitle">New Rule</span><button type="button" class="btn btn-sm close" id="closeRecModal" aria-label="Close">✕</button></div>
+  <div class="section-title"><span id="recFormTitle">New Rule</span><button type="button" class="btn btn-sm close" id="closeRecModal" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <form id="recurringForm" class="form-grid">
         <input type="hidden" id="recId" />
         <input type="text" id="recTitle" placeholder="Title (e.g. Phone Installment, Gym)" required />
@@ -461,17 +517,47 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
       </form>
 </div></div>
 
+<!-- GOAL: create / edit -->
+<div class="modal-backdrop" id="goalModal"><div class="sheet">
+  <div class="section-title"><span id="goalModalTitle">New Saving Goal</span><button type="button" class="btn btn-sm close" id="closeGoalModal" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <form id="goalForm" class="form-grid">
+    <input type="hidden" id="goalId" />
+    <div><label class="label-muted" for="goalName">What are you saving for?</label><input type="text" id="goalName" maxlength="40" placeholder="e.g. Japan trip, Emergency fund" required /></div>
+    <div><label class="label-muted" for="goalTarget">Target amount (RM)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="goalTarget" data-label="Target (RM)" placeholder="0.00" /></div>
+    <div><label class="label-muted" for="goalDate">Target date</label><input type="date" id="goalDate" required /></div>
+    <div id="goalStartWrap"><label class="label-muted" for="goalStart">Already saved (RM, optional)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="goalStart" data-label="Already saved (RM)" data-min="0" placeholder="0.00" /></div>
+    <button type="submit" class="btn btn-glow" id="goalSubmitBtn">Create Goal</button>
+    <button type="button" class="btn btn-danger-ghost hidden" id="goalDelete">Delete goal</button>
+  </form>
+</div></div>
+
+<!-- GOAL: detail, add / take out money -->
+<div class="modal-backdrop" id="goalDetailModal"><div class="sheet">
+  <div class="section-title"><span id="gdTitle"></span><span style="display:flex;gap:8px"><button type="button" class="btn btn-sm btn-ghost" id="gdEdit">Edit</button><button type="button" class="btn btn-sm close" id="closeGoalDetail" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+  <div class="form-grid">
+    <div class="goal-summary" id="gdSummary"></div>
+    <input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="gdAmount" data-label="Amount (RM)" placeholder="Amount (RM)" aria-label="Amount" />
+    <div class="row-2"><button type="button" class="btn btn-ghost" id="gdTake">Take out</button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
+    <p class="note" style="margin:0;text-align:center">This only sets money aside. It is not logged as an expense.</p>
+    <div id="gdHistory"></div>
+  </div>
+</div></div>
+
 <!-- SETTINGS MODAL -->
 <div class="modal-backdrop" id="settingsModal"><div class="sheet">
-  <div class="section-title"><span>Settings</span><button type="button" class="btn btn-sm close" id="closeSettingsModal" aria-label="Close">✕</button></div>
+  <div class="section-title"><span>Settings</span><button type="button" class="btn btn-sm close" id="closeSettingsModal" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <div class="form-grid">
+    <div class="group-label">You</div>
+    <div><label class="label-muted" for="nameInput">Your name</label>
+      <div class="inline"><input type="text" id="nameInput" maxlength="20" autocomplete="off" autocapitalize="words" placeholder="Your name" /><button type="button" class="btn btn-ghost" id="saveNameBtn">Save</button></div></div>
     <div class="group-label">Money</div>
     <div><label class="label-muted" for="initialFundInput">Initial Fund (Starting Cash in RM)</label>
       <div class="inline"><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="initialFundInput" data-label="Initial Fund (RM)" data-min="0" placeholder="0.00" /><button type="button" class="btn btn-glow" id="saveInitialFundBtn">Save</button></div></div>
     <div><label class="label-muted" for="budgetInput">Monthly Budget (RM, 0 = off)</label>
       <div class="inline"><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="budgetInput" data-label="Monthly Budget (RM)" data-min="0" placeholder="0.00" /><button type="button" class="btn btn-ghost" id="saveBudgetBtn">Save</button></div></div>
     <div class="group-label">Preferences</div>
-    <label class="toggle-row"><span><span style="font-weight:600">Sound Effects</span><span class="meta">Save, Paid and Undo</span></span><input type="checkbox" id="soundToggle" /></label>
+    <label class="toggle-row"><span><span style="font-weight:600">Sound Effects</span><span class="meta">Save, Paid, Undo and Goal reached</span></span><input type="checkbox" id="soundToggle" /></label>
+    <button type="button" class="btn btn-ghost btn-sm" id="testGoalSoundBtn">Preview goal sound</button>
     <div class="group-label">Backup</div>
     <div><div class="row-3"><button type="button" class="btn btn-ghost btn-sm" id="exportJsonBtn">Export JSON</button><button type="button" class="btn btn-ghost btn-sm" id="exportCsvBtn">Export CSV</button><label class="btn btn-ghost btn-sm">Import<input type="file" id="importJsonInput" accept="application/json" class="hidden" /></label></div>
       <div class="note" id="lastBackupText"></div></div>
@@ -524,6 +610,23 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <button type="button" class="ck" data-k=".">.</button>
     <button type="button" class="ck eq" data-k="=" style="grid-column:span 2">=</button>
   </div>
+</div></div>
+
+<div id="celebrate" role="dialog" aria-modal="true" aria-labelledby="celeTitle"><div class="cele-box" id="celeBox">
+  <div class="cele-medal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg></div>
+  <h2 id="celeTitle">Goal reached!</h2><p id="celeMsg"></p>
+  <button type="button" class="btn btn-glow btn-block" id="celeClose">Nice!</button>
+</div></div>
+
+<div class="modal-backdrop" id="welcomeModal"><div class="sheet">
+  <div class="welcome-mark" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="#A9FF3B" stroke-width="1.8"/><path d="M12 8.5V15.5M8.5 12H15.5" stroke="#A9FF3B" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <h2>Welcome</h2><p class="label-muted" style="margin:0 0 18px">What should your Ledger call you?<br>You can change this later in Settings.</p>
+  <form id="welcomeForm" class="form-grid">
+    <input type="text" id="welcomeName" maxlength="20" autocomplete="off" autocapitalize="words" placeholder="Your name" aria-label="Your name" />
+    <div id="welcomeFundWrap"><label class="label-muted" for="welcomeFund">Cash you have now (RM, optional)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="welcomeFund" data-label="Starting cash (RM)" data-min="0" placeholder="0.00" /></div>
+    <button type="submit" class="btn btn-glow">Start</button>
+    <button type="button" class="btn btn-text" id="welcomeSkip">Skip for now</button>
+  </form>
 </div></div>
 
 <div id="toast" class="toast" role="status"></div>
@@ -677,6 +780,7 @@ function defaultPresets() {
   ];
 }
 
+const cleanName = (v) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, 20) : "");
 function validDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s || "")); }
 function cleanId(s) { return String(s ?? "").replace(/[^\w-]/g, "_").slice(0, 60); }
 
@@ -712,6 +816,16 @@ function normalizeState(d) {
     const totalTerms = Math.max(0, parseInt(r.totalTerms, 10) || 0), done = Math.max(0, parseInt(r.doneTerms, 10) || 0);
     recurring.push({ id: rcId(r.id, "rec"), title: str(r.title, ""), amount, category: str(r.category, "Others"), totalTerms, doneTerms: totalTerms > 0 ? Math.min(totalTerms, done) : done, work: Boolean(r.work) });
   }
+  const goalId = ids(), goals = [];
+  for (const g of Array.isArray(d.goals) ? d.goals : []) {
+    const target = g ? numPos(g.target) : null;
+    if (!g || !str(g.name, "") || target === null || !validDate(g.date)) { skipped++; continue; }
+    const histId = ids();
+    const history = (Array.isArray(g.history) ? g.history : []).filter(h => h && Number.isFinite(Number(h.amount)) && Number(h.amount) !== 0 && validDate(h.date)).map(h => ({ id: histId(h.id, "gh"), amount: Number(h.amount), date: h.date }));
+    const o = { id: goalId(g.id, "goal"), name: str(g.name, "").slice(0, 40), target, date: g.date, history };
+    if (validDate(g.reachedDate)) o.reachedDate = g.reachedDate;
+    goals.push(o);
+  }
   const hasPresets = Array.isArray(d.presets);
   const presets = [];
   for (const s of hasPresets ? d.presets : []) {
@@ -720,8 +834,8 @@ function normalizeState(d) {
     presets.push({ id: psId(s.id, "ps"), label: str(s.label, "").slice(0, 20), type: s.type, amount, category: str(s.category, s.type === "income" ? "Other Income" : "Others"), note: typeof s.note === "string" ? s.note.slice(0, 200) : "", work: s.type === "expense" && Boolean(s.work) });
   }
   return {
-    data: { initialFund: Math.max(0, Number(d.initialFund) || 0), budget: Math.max(0, Number(d.budget) || 0), transactions, planned, recurring, presets: hasPresets ? presets : defaultPresets() },
-    counts: { tx: transactions.length, planned: planned.length, rec: recurring.length, presets: hasPresets ? presets.length : 0 },
+    data: { name: cleanName(d.name), goals, initialFund: Math.max(0, Number(d.initialFund) || 0), budget: Math.max(0, Number(d.budget) || 0), transactions, planned, recurring, presets: hasPresets ? presets : defaultPresets() },
+    counts: { goals: goals.length, tx: transactions.length, planned: planned.length, rec: recurring.length, presets: hasPresets ? presets.length : 0 },
     skipped
   };
 }
@@ -743,6 +857,8 @@ function filterLedger(data, o) {
 function getDefaultState() {
   const ym = currentYM();
   return {
+    name: "",
+    goals: [],
     initialFund: 0,
     budget: 0,
     transactions: [
@@ -752,13 +868,16 @@ function getDefaultState() {
     ],
     planned: [
       { id: "p1", title: "Condo Maintenance Fee", amount: 183, dueDate: `${ym}-28`, category: "Bills & Utilities", work: false, paid: false },
-      { id: "p2", title: "Girlfriend's Birthday Headphones", amount: 200, dueDate: `${ym}-29`, category: "Gifts & Occasions", work: false, paid: false }
+      { id: "p2", title: "Birthday Gift", amount: 200, dueDate: `${ym}-29`, category: "Gifts & Occasions", work: false, paid: false }
     ],
     recurring: [{ id: "r1", title: "Device Installment", amount: 150, category: "Shopping & Gear", totalTerms: 12, doneTerms: 3, work: false }],
     presets: defaultPresets()
   };
 }
 
+// brand-new users start with an empty ledger (sample data stays available under Reset)
+function getBlankState() { return { name: "", goals: [], initialFund: 0, budget: 0, transactions: [], planned: [], recurring: [], presets: defaultPresets() }; }
+let isNewUser = false;
 let state = loadState();
 let selectedMonth = currentYM();
 let ledgerFilter = "all", ledgerQuery = "", ledgerCat = "", ledgerAll = false, presetManage = false, toastTimer;
@@ -766,7 +885,7 @@ let ledgerFilter = "all", ledgerQuery = "", ledgerCat = "", ledgerAll = false, p
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("apple_minimal_rm_tracker_v3") || localStorage.getItem("apple_minimal_rm_tracker_v2");
-    if (!raw) return getDefaultState();
+    if (!raw) { isNewUser = true; return getBlankState(); }
     const n = normalizeState(JSON.parse(raw));
     return n ? n.data : getDefaultState();
   } catch { return getDefaultState(); }
@@ -964,12 +1083,30 @@ function endYM(r, thisMonthLogged, ym) {
   const d = new Date(y, m - 1 + left - (thisMonthLogged ? 0 : 1), 1);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 }
+/* ---------- Saving goals (money set aside; never creates a transaction) ---------- */
+const goalSaved = (g) => sumBy(g.history, h => h.amount);
+const totalSaved = (data) => sumBy(data.goals || [], goalSaved);
+function goalPlan(g, today) {
+  const saved = goalSaved(g), left = Math.max(0, Math.round((g.target - saved) * 100) / 100);
+  const pct = Math.max(0, Math.min(100, saved / g.target * 100)), days = Math.round((Date.parse(g.date) - Date.parse(today)) / 86400000);
+  const perMonth = left && days > 31 ? Math.ceil(left / (days / 30.4375) * 100) / 100 : null;
+  const perDay = left && days >= 0 && days <= 31 ? Math.ceil(left / (days + 1) * 100) / 100 : null;   // counts today
+  return { saved, left, pct, days, perMonth, perDay, done: left === 0, late: left > 0 && days < 0 };
+}
+// returns true only at the moment a goal crosses its target
+function syncGoalReached(g, today) {
+  const done = goalSaved(g) >= g.target;
+  if (done && !g.reachedDate) { g.reachedDate = today; return true; }
+  if (!done) delete g.reachedDate;
+  return false;
+}
 // cash on hand minus what is still due by the end of this month (includes overdue plans)
 function computeAvailable(data, ym) {
   const cash = computeTotalCash(data);
   const plans = sumBy(data.planned.filter(p => !p.paid && p.dueDate.slice(0, 7) <= ym), p => p.amount);
   const terms = computeRecurringSummary(data, ym).pending;
-  return { cash, plans, terms, available: Math.round((cash - plans - terms) * 100) / 100 };
+  const goals = totalSaved(data);
+  return { cash, plans, terms, goals, available: Math.round((cash - plans - terms - goals) * 100) / 100 };
 }
 
 /* ---------- Backup tracking (stored separately from ledger data) ---------- */
@@ -1007,6 +1144,15 @@ const SOUNDS = {                                    // one family: Save & Paid l
     { type: "sine", f: 880,    at: .064, dur: .092, peak: .125, attack: .004 },
     { type: "sine", f: 440,    at: .064, dur: .092, peak: .038, attack: .006 },
     { type: "sine", f: 3432,   at: .064, dur: .016, peak: .012, attack: .0015 }
+  ],
+  // Goal reached: rising A-major run (E5 A5 C#6) that blooms on E6, ~0.75s; same family, a little more joy
+  goal: [
+    { type: "sine", f: 659.25,  at: 0,   dur: .13, peak: .10,  attack: .005 },
+    { type: "sine", f: 880,     at: .10, dur: .13, peak: .105, attack: .005 },
+    { type: "sine", f: 1108.73, at: .20, dur: .14, peak: .10,  attack: .005 },
+    { type: "sine", f: 1318.51, at: .31, dur: .44, peak: .105, attack: .008 },
+    { type: "sine", f: 880,     at: .31, dur: .44, peak: .038, attack: .012 },
+    { type: "sine", f: 2637,    at: .37, dur: .30, peak: .012, attack: .02 }
   ],
   // Undo: E5 slides back to A4, slow soft attack, quietest, ~110ms
   undo: [
@@ -1054,6 +1200,97 @@ function unlockAudio() {
   try { const ctx = getAudio(); if (ctx && ctx.state !== "running") ctx.resume().catch(() => {}); } catch {}
 }
 ["touchend", "click"].forEach(ev => document.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+
+/* ---------- Name ---------- */
+const WELCOME_KEY = "ledger_welcomed";
+const homeTitle = () => state.name ? `Hey ${state.name}` : "Hey there";
+function setTitle(text) { $("pageTitle").textContent = text; $("pageTitle").classList.toggle("long", text.length > 11); }
+function renderName() {
+  $("brandName").textContent = state.name ? `${state.name.toUpperCase()}'S LEDGER` : "MY LEDGER";
+  if (!$("tab-dashboard").classList.contains("hidden")) setTitle(homeTitle());
+}
+
+/* ---------- Saving goals view ---------- */
+function paceText(g, p) {
+  if (p.done) return `Reached ${fmtD(g.reachedDate || todayISO())} 🎉`;
+  if (p.late) return `Date passed · ${formatRM(p.left)} to go`;
+  if (p.perMonth !== null) return `Save about ${formatRM(p.perMonth)} a month`;
+  if (p.days === 0) return `Due today · ${formatRM(p.left)} to go`;
+  return `Save about ${formatRM(p.perDay)} a day · ${p.days + 1} days incl. today`;
+}
+function renderGoals() {
+  const today = todayISO(), goals = state.goals.slice().sort((a, b) => Number(!!a.reachedDate) - Number(!!b.reachedDate) || a.date.localeCompare(b.date));
+  $("goalSummary").textContent = goals.length ? `${formatRM(totalSaved(state))} set aside` : "";
+  $("goalList").innerHTML = !goals.length ? `<div class="goal-empty label-muted">Saving for something? Set a target and a date,<br>and see how much to put aside.</div>` : goals.map(g => {
+    const p = goalPlan(g, today);
+    return `<div class="goal">
+      <button type="button" class="item-main" onclick="openGoal('${g.id}')">
+        <span class="ring" style="--p:${p.pct.toFixed(2)}"><i>${Math.floor(p.pct)}%</i></span>
+        <span class="item-text"><span class="item-title">${escapeHtml(g.name)}</span>
+        <span class="item-sub"><b>${formatRM(p.saved)}</b> of ${formatRM(g.target)}</span>
+        <span class="item-sub">By ${fmtD(g.date)}</span>
+        <span class="item-sub pace${p.late ? " late" : ""}">${paceText(g, p)}</span></span>
+      </button></div>`;
+  }).join("");
+  if ($("goalDetailModal").classList.contains("open")) renderGoalDetail();
+}
+let activeGoal = "";
+const findGoal = (id) => state.goals.find(g => g.id === id);
+function renderGoalDetail() {
+  const g = findGoal(activeGoal); if (!g) { $("goalDetailModal").classList.remove("open"); return; }
+  const p = goalPlan(g, todayISO());
+  $("gdTitle").textContent = g.name;
+  $("gdSummary").innerHTML = `<div class="ring big" style="--p:${p.pct.toFixed(2)}"><i>${Math.floor(p.pct)}%</i></div>
+    <div class="stat-val">${formatRM(p.saved)}</div><div class="label-muted">of ${formatRM(g.target)} · by ${fmtD(g.date)}</div><div class="label-muted">${paceText(g, p)}</div>`;
+  $("gdHistory").innerHTML = !g.history.length ? "" : `<div class="label-muted" style="margin-bottom:6px">History</div><div class="hist">${g.history.slice().reverse().map(h => `<div class="line"><span>${fmtD(h.date)}</span><div><b class="${h.amount > 0 ? "green" : ""}">${h.amount > 0 ? "+" : "−"}${formatRM(Math.abs(h.amount))}</b><button type="button" aria-label="Remove this record" onclick="removeGoalRecord('${h.id}')"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>`).join("")}</div>`;
+}
+window.openGoal = (id) => { $("toast").classList.remove("show", "has-action"); activeGoal = id; $("gdAmount").value = ""; renderGoalDetail(); $("goalDetailModal").classList.add("open"); };
+function openGoalForm(g) {
+  $("goalId").value = g ? g.id : ""; $("goalName").value = g ? g.name : ""; $("goalTarget").value = g ? g.target.toFixed(2) : "";
+  const later = new Date(); later.setMonth(later.getMonth() + 6, 1);
+  $("goalDate").value = g ? g.date : `${later.getFullYear()}-${pad(later.getMonth() + 1)}-01`;
+  $("goalStart").value = ""; $("goalStartWrap").classList.toggle("hidden", !!g); $("goalDelete").classList.toggle("hidden", !g);
+  $("goalModalTitle").textContent = g ? "Edit Goal" : "New Saving Goal"; $("goalSubmitBtn").textContent = g ? "Save Changes" : "Create Goal";
+  $("goalModal").classList.add("open");
+}
+function celebrate(g) {
+  const early = Math.round((Date.parse(g.date) - Date.parse(todayISO())) / 86400000);
+  $("celeMsg").textContent = `${g.name}\n${formatRM(goalSaved(g))} saved` + (early > 0 ? `\n${early} ${early === 1 ? "day" : "days"} ahead of your date` : early === 0 ? "\nRight on your target date" : "");
+  const box = $("celeBox"); box.querySelectorAll(".spark-bit").forEach(e => e.remove());
+  for (let i = 0; i < 22; i++) {
+    const bit = document.createElement("span"), a = i / 22 * Math.PI * 2, r = 100 + (i % 3) * 34;
+    bit.className = "spark-bit"; bit.style.setProperty("--x", `${Math.round(Math.cos(a) * r)}px`); bit.style.setProperty("--y", `${Math.round(Math.sin(a) * r)}px`);
+    box.appendChild(bit);
+  }
+  $("toast").classList.remove("show", "has-action");
+  $("celebrate").classList.add("open"); $("celeClose").focus({ preventScroll: true }); playSound("goal");
+}
+function moveGoalMoney(sign) {
+  const g = findGoal(activeGoal); if (!g) return;
+  const amount = parseFloat($("gdAmount").value);
+  if (!Number.isFinite(amount) || amount <= 0) { toast("Enter an amount first"); return; }
+  if (sign < 0 && amount > goalSaved(g)) { toast(`Only ${formatRM(goalSaved(g))} saved in this goal`); return; }
+  const rec = { id: uid("gh"), amount: sign * amount, date: todayISO() }, goalRef = g.id;
+  g.history.push(rec);
+  const reached = syncGoalReached(g, todayISO());
+  $("gdAmount").value = ""; $("goalDetailModal").classList.remove("open"); renderAll();
+  if (reached) { celebrate(g); return; }
+  toast(sign > 0 ? `Saved to ${g.name} · ${formatRM(amount)}` : `Took out ${formatRM(amount)}`, () => {
+    const x = findGoal(goalRef); if (!x || !x.history.some(h => h.id === rec.id)) return;
+    const rest = x.history.filter(h => h.id !== rec.id);
+    if (sumBy(rest, h => h.amount) < 0) { toast("Can’t undo: later withdrawals use this money"); return; }
+    const wasDone = !!x.reachedDate, when = x.reachedDate;
+    x.history = rest; syncGoalReached(x, todayISO()); if (wasDone && x.reachedDate) x.reachedDate = when;
+    renderAll(); toast("Undone"); playSound("undo");
+  });
+  if (sign > 0) playSound("save");
+}
+window.removeGoalRecord = (hid) => {
+  const g = findGoal(activeGoal), h = g && g.history.find(x => x.id === hid); if (!h) return;
+  const rest = g.history.filter(x => x.id !== hid);
+  if (sumBy(rest, x => x.amount) < 0) { showNotice("Can’t remove this", "A later withdrawal uses this money. Remove that withdrawal first."); return; }
+  askConfirm("Remove this record?", `${fmtD(h.date)} · ${h.amount > 0 ? "+" : "−"}${formatRM(Math.abs(h.amount))}`, "Remove", () => { g.history = rest; const hit = syncGoalReached(g, todayISO()); renderAll(); if (hit) { $("goalDetailModal").classList.remove("open"); celebrate(g); } });
+};
 
 /* ---------- Confirm dialog ---------- */
 let confirmCb = null;
@@ -1211,10 +1448,11 @@ function renderDashboard() {
   if (!isNow) $("dashAvailable").innerHTML = "";
   else {
     const av = computeAvailable(state, selectedMonth), wasOpen = Boolean($("dashAvailable").querySelector("details[open]"));
-    $("dashAvailable").innerHTML = `<details class="avail"${wasOpen ? " open" : ""}><summary><span>Available after dues<small>Cash minus bills still due · tap for details</small></span><b class="${av.available < 0 ? "red" : ""}">${formatRM(av.available)}</b></summary>
+    $("dashAvailable").innerHTML = `<details class="avail"${wasOpen ? " open" : ""}><summary><span>Available after dues<small>Cash minus dues and savings · tap for details</small></span><b class="${av.available < 0 ? "red" : ""}">${formatRM(av.available)}</b></summary>
       <div class="line"><span>Total Cash</span><b>${formatRM(av.cash)}</b></div>
       <div class="line"><span>Unpaid plans (to month end)</span><b>− ${formatRM(av.plans)}</b></div>
-      <div class="line"><span>Recurring not logged</span><b>− ${formatRM(av.terms)}</b></div></details>`;
+      <div class="line"><span>Recurring not logged</span><b>− ${formatRM(av.terms)}</b></div>
+      ${av.goals ? `<div class="line"><span>Set aside for goals</span><b>− ${formatRM(av.goals)}</b></div>` : ""}</details>`;
   }
 
   const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth), pmName = fmtYM(pm);
@@ -1262,7 +1500,7 @@ function renderPresets() {
   const el = $("presetList");
   $("managePresetsBtn").textContent = presetManage ? "Done" : "Manage";
   if (!state.presets.length) { el.innerHTML = `<div class="empty">No presets yet. Fill in the form below, then tap “Save as preset”.</div>`; return; }
-  el.innerHTML = state.presets.map(p => `<button type="button" class="chip preset${presetManage ? " del" : ""}" onclick="usePreset('${p.id}')">${escapeHtml(p.label)} <span class="${presetManage ? "" : "muted"}">${presetManage ? "✕" : fmtAmt(p.amount)}</span></button>`).join("");
+  el.innerHTML = state.presets.map(p => `<button type="button" class="chip preset${presetManage ? " del" : ""}" onclick="usePreset('${p.id}')">${escapeHtml(p.label)} <span class="${presetManage ? "" : "muted"}">${presetManage ? `<svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>` : fmtAmt(p.amount)}</span></button>`).join("");
 }
 
 window.usePreset = (id) => {
@@ -1363,13 +1601,13 @@ function renderAll() {
   saveState();
   $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2);
   $("budgetInput").value = Number(state.budget || 0).toFixed(2);
-  renderMonthSelect(); renderDashboard(); renderLedger(); renderRecurring(); renderPresets(); renderBackupStatus();
+  renderMonthSelect(); renderDashboard(); renderLedger(); renderRecurring(); renderPresets(); renderBackupStatus(); renderName(); renderGoals();
   const baseUrl = window.location.href.split("#")[0].split("?")[0];
   $("shortcutUrlBox").textContent = `${baseUrl}?type=expense&amount=18.50&category=Food%20%26%20Beverage&note=Lunch&work=0`;
 }
 
 /* ---------- Actions ---------- */
-function openSettings() { $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("budgetInput").value = Number(state.budget || 0).toFixed(2); $("settingsModal").classList.add("open"); }
+function openSettings() { $("nameInput").value = state.name; $("initialFundInput").value = Number(state.initialFund || 0).toFixed(2); $("budgetInput").value = Number(state.budget || 0).toFixed(2); $("settingsModal").classList.add("open"); }
 function openSettingsAndFocusFund() { openSettings(); setTimeout(() => openCalc($("initialFundInput")), 80); }
 function commitInitialFund() {
   const v = parseFloat($("initialFundInput").value);
@@ -1448,9 +1686,9 @@ window.deleteRecurring = (id) => {
 };
 
 let enterTimer;
-const PAGE_TITLES = { dashboard: "Hey Jeff", log: "Add entry", ledger: "Ledger", recurring: "Terms" };
+const PAGE_TITLES = { dashboard: "", log: "Add entry", ledger: "Ledger", recurring: "Terms" };
 function switchTab(tab) {
-  $("pageTitle").textContent = PAGE_TITLES[tab];
+  setTitle(tab === "dashboard" ? homeTitle() : PAGE_TITLES[tab]);
   const tabs = ["dashboard", "log", "ledger", "recurring"];
   const buttons = Array.from(document.querySelectorAll(".nav-btn"));
   const prevBtn = buttons.find(b => b.classList.contains("active"));
@@ -1527,11 +1765,23 @@ function runSelfTest() {
   t(computeAvailable(cm, "2026-05").available === 810, "Available = cash - dues to month end - pending recurring");
   t(endYM(cm.recurring[0], true, "2026-05") === "2027-01", "Fixed term end month");
   t(normalizeState({ transactions: [], budget: 1500 }).data.budget === 1500 && normalizeState({ transactions: [] }).data.budget === 0, "Budget survives load; old backups still work");
+  const gl = { id: "g", name: "Trip", target: 1200, date: "2026-12-31", history: [{ amount: 500, date: "2026-01-01" }, { amount: -200, date: "2026-02-01" }] };
+  const gp = goalPlan(gl, "2026-01-01");
+  t(gp.saved === 300 && gp.left === 900 && gp.pct === 25 && gp.perMonth > 75 && gp.perMonth < 76, "Goal progress and monthly pace");
+  t(goalPlan(gl, "2027-01-01").late && goalPlan(gl, "2026-12-30").perDay === 450, "Goal overdue / daily pace");
+  gl.history.push({ amount: 900, date: "2026-03-01" });
+  t(syncGoalReached(gl, "2026-03-01") === true && syncGoalReached(gl, "2026-03-02") === false && gl.reachedDate === "2026-03-01", "Goal celebrates only when it first reaches target");
+  t(computeAvailable({ initialFund: 1000, transactions: [], planned: [], recurring: [], goals: [{ history: [{ amount: 300 }] }] }, "2026-05").available === 700, "Savings are set aside from available");
+  const nb = normalizeState({ transactions: [], name: "  Mei  ", goals: [gl, { name: "bad" }] });
+  t(nb.data.name === "Mei" && nb.data.goals.length === 1 && normalizeState({ transactions: [] }).data.goals.length === 0, "Name & goals survive backup; old backups still work");
   $("selfTestOutputWrap").classList.remove("hidden");
   $("selfTestOutput").textContent = out.join("\n");
 }
 
 /* ---------- Events ---------- */
+document.addEventListener("click", (e) => {      // runs before the button's own handler
+  if (e.target.closest("#openSettingsBtn,#addGoalBtn,#addPlannedBtn,#toggleRecurringFormBtn,.item-main")) $("toast").classList.remove("show", "has-action");
+}, true);
 function deleteFromSheet(sheetId, idField, remove) {
   remove($(idField).value);
   const run = confirmCb; if (run) confirmCb = () => { run(); $(sheetId).classList.remove("open"); };
@@ -1539,6 +1789,48 @@ function deleteFromSheet(sheetId, idField, remove) {
 $("editTxDelete").addEventListener("click", () => deleteFromSheet("editTxModal", "editTxId", window.deleteTx));
 $("plDelete").addEventListener("click", () => deleteFromSheet("plannedModal", "plId", window.deletePlanned));
 $("recDelete").addEventListener("click", () => deleteFromSheet("recModal", "recId", window.deleteRecurring));
+function saveName() { state.name = cleanName($("nameInput").value); $("nameInput").blur(); $("settingsModal").classList.remove("open"); renderAll(); toast(state.name ? `Hi, ${state.name}` : "Name cleared"); }
+$("saveNameBtn").addEventListener("click", saveName);
+$("nameInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); saveName(); } });
+function finishWelcome(save) {
+  if (save) {
+    state.name = cleanName($("welcomeName").value);
+    const fund = parseFloat($("welcomeFund").value); if (isNewUser && Number.isFinite(fund) && fund >= 0) state.initialFund = fund;
+  }
+  writeKey(WELCOME_KEY, "1"); $("welcomeName").blur(); $("welcomeModal").classList.remove("open"); renderAll();
+}
+$("welcomeForm").addEventListener("submit", (e) => { e.preventDefault(); finishWelcome(true); });
+$("welcomeSkip").addEventListener("click", () => finishWelcome(false));
+$("addGoalBtn").addEventListener("click", () => openGoalForm(null));
+$("closeGoalModal").addEventListener("click", () => $("goalModal").classList.remove("open"));
+$("closeGoalDetail").addEventListener("click", () => $("goalDetailModal").classList.remove("open"));
+$("gdEdit").addEventListener("click", () => { const g = findGoal(activeGoal); if (!g) return; $("goalDetailModal").classList.remove("open"); openGoalForm(g); });
+$("gdAdd").addEventListener("click", () => moveGoalMoney(1));
+$("gdTake").addEventListener("click", () => moveGoalMoney(-1));
+$("goalForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = $("goalName").value.trim(), target = parseFloat($("goalTarget").value), date = $("goalDate").value, id = $("goalId").value;
+  if (!name) { toast("Give your goal a name"); return; }
+  if (!Number.isFinite(target) || target <= 0) { toast("Enter a target amount"); return; }
+  const old = findGoal(id);
+  if (!validDate(date) || (date < todayISO() && (!old || old.date !== date))) { toast("Pick today or a later date"); return; }
+  let g = old;
+  if (g) Object.assign(g, { name, target, date });
+  else {
+    const start = parseFloat($("goalStart").value) || 0;
+    g = { id: uid("goal"), name, target, date, history: start > 0 ? [{ id: uid("gh"), amount: start, date: todayISO() }] : [] };
+    state.goals.push(g);
+  }
+  const reached = syncGoalReached(g, todayISO());
+  $("goalModal").classList.remove("open"); renderAll();
+  if (reached) celebrate(g); else toast(old ? "Goal updated" : "Goal created");
+});
+$("goalDelete").addEventListener("click", () => {
+  const g = findGoal($("goalId").value); if (!g) return;
+  askConfirm("Delete goal?", `${g.name} · ${formatRM(goalSaved(g))} saved\nThe money returns to your available balance.`, "Delete", () => { state.goals = state.goals.filter(x => x.id !== g.id); $("goalModal").classList.remove("open"); renderAll(); });
+});
+$("celeClose").addEventListener("click", () => $("celebrate").classList.remove("open"));
+$("testGoalSoundBtn").addEventListener("click", () => { if (!soundOn) toast("Turn on Sound Effects first"); else playSound("goal"); });
 $("catTiles").addEventListener("click", (e) => { const b = e.target.closest("[data-cat]"); if (!b) return; $("txCategory").value = b.dataset.cat; syncPickers(); buzz(6); });
 document.querySelectorAll(".day-chip").forEach(b => b.addEventListener("click", () => { $("txDate").value = isoDaysAgo(+b.dataset.day); syncDayChips(); }));
 $("txDate").addEventListener("change", syncDayChips);
@@ -1637,10 +1929,11 @@ $("importJsonInput").addEventListener("change", (e) => {
     try { res = normalizeState(JSON.parse(reader.result)); } catch { res = null; }
     if (!res) return unsupported();
     input.value = "";
-    const c = res.counts, total = c.tx + c.planned + c.rec + c.presets;
+    const c = res.counts, total = c.tx + c.planned + c.rec + c.presets + c.goals;
     const word = total === 1 ? "record" : "records";
-    const detail = `${c.tx} transactions · ${c.planned} plans · ${c.rec} terms · ${c.presets} presets` + (res.skipped ? `\n${res.skipped} invalid skipped` : "");
+    const detail = `${c.tx} transactions · ${c.planned} plans · ${c.rec} terms · ${c.presets} presets · ${c.goals} goals` + (res.skipped ? `\n${res.skipped} invalid skipped` : "");
     askConfirm("Replace current data?", `Found ${total} ${word}.\n${detail}\n\nThis replaces everything currently in the app.`, "Replace", () => {
+      if (!res.data.name) res.data.name = state.name;
       state = res.data; selectedMonth = currentYM(); renderAll();
       showNotice("Import complete", `Imported ${total} ${word}.\n${detail}`);
     });
@@ -1649,15 +1942,15 @@ $("importJsonInput").addEventListener("change", (e) => {
 });
 
 $("resetDemoBtn").addEventListener("click", () => {
-  askConfirm("Reset to sample data?", "All your transactions, plans, terms and Initial Fund will be erased and replaced with sample data. This cannot be undone.", "Yes, Reset", () => {
-    state = getDefaultState(); selectedMonth = currentYM(); renderAll(); $("settingsModal").classList.remove("open");
+  askConfirm("Reset to sample data?", "All your transactions, plans, terms, saving goals, budget and Initial Fund will be erased and replaced with sample data. This cannot be undone.", "Yes, Reset", () => {
+    const keep = state.name; state = getDefaultState(); state.name = keep; selectedMonth = currentYM(); renderAll(); $("settingsModal").classList.remove("open");
   });
 });
 
 $("cfCancel").addEventListener("click", closeConfirm);
 $("cfOk").addEventListener("click", () => { const cb = confirmCb; closeConfirm(); if (cb) cb(); });
-document.querySelectorAll(".modal-backdrop").forEach(el => el.addEventListener("click", (e) => { if (e.target === el) { el.classList.remove("open"); if (el.id === "confirmModal") confirmCb = null; } }));
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll(".modal-backdrop.open").forEach(m => m.classList.remove("open")); });
+document.querySelectorAll(".modal-backdrop:not(#welcomeModal)").forEach(el => el.addEventListener("click", (e) => { if (e.target === el) { el.classList.remove("open"); if (el.id === "confirmModal") confirmCb = null; } }));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.querySelectorAll(".modal-backdrop.open:not(#welcomeModal)").forEach(m => m.classList.remove("open")); });
 
 $("ledgerSearch").addEventListener("input", (e) => { ledgerQuery = e.target.value; renderLedger(); });
 $("ledgerScope").addEventListener("change", (e) => { ledgerAll = e.target.value === "all"; renderLedger(); });
@@ -1693,6 +1986,8 @@ $("soundToggle").addEventListener("change", (e) => {
 window.addEventListener("resize", placeNavPill);
 window.addEventListener("orientationchange", () => setTimeout(placeNavPill, 250));
 playLaunchTransition();
+// ask for a name once (new users also get an optional starting-cash field)
+if (!state.name && !readKey(WELCOME_KEY)) { $("welcomeFundWrap").classList.toggle("hidden", !isNewUser); $("welcomeModal").classList.add("open"); }
 </script>
 </body>
 </html>
