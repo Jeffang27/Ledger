@@ -76,12 +76,23 @@ label{display:block}
 .btn-ghost{background:var(--sec-2)}
 #goalDetailModal .row-2 .btn{transition:background .18s,color .18s,transform .1s}
 :root{--hold:.9s}
-.hold-btn{overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:background .18s,color .18s,transform .18s}
-.hold-btn .hold-fill{position:absolute;inset:0;background:currentColor;opacity:.2;transform:scaleX(0);transform-origin:left center;transition:transform .22s ease-out;pointer-events:none}
-.hold-btn .hold-label{position:relative;z-index:1}
-.hold-btn.holding{transform:scale(.97)}
-.hold-btn.holding .hold-fill{transform:scaleX(1);transition:transform var(--hold) linear}
-@media (prefers-reduced-motion:reduce){.hold-btn.holding{transform:none}}
+.hold-btn{overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:background .18s,color .18s,transform .18s;--amp:0}
+.hold-btn .hold-fill{position:absolute;inset:0;background:linear-gradient(90deg,rgba(var(--accent-rgb),.10),rgba(var(--accent-rgb),.5));clip-path:inset(0 100% 0 0);transition:clip-path .28s ease-out;pointer-events:none}
+.hold-btn.btn-glow .hold-fill{background:linear-gradient(90deg,rgba(0,0,0,.06),rgba(0,0,0,.3))}
+.hold-btn .hold-edge{position:absolute;top:0;bottom:0;left:0;width:28px;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),.6));opacity:0;pointer-events:none;transition:opacity .2s,left .28s ease-out}
+.hold-btn.btn-glow .hold-edge{background:linear-gradient(90deg,transparent,rgba(255,255,255,.6))}
+.hold-btn .hold-flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(var(--accent-rgb),.75),transparent 65%)}
+.hold-btn .hold-label{position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.hold-btn.holding{animation:holdJit .09s linear infinite}
+.hold-btn.holding .hold-fill{clip-path:inset(0 0 0 0);transition:clip-path var(--hold) linear}
+.hold-btn.holding .hold-edge{opacity:1;left:100%;transition:left var(--hold) linear,opacity .2s}
+.hold-btn.released{animation:holdPop .38s cubic-bezier(.2,.9,.3,1.3)}
+.hold-btn.released .hold-fill{clip-path:inset(0 0 0 0);transition:none}
+.hold-btn.released .hold-flash{animation:holdFlash .42s ease-out}
+@keyframes holdJit{0%{transform:translate(calc(var(--amp)*-1px),0) scale(.97)}25%{transform:translate(calc(var(--amp)*1px),calc(var(--amp)*.6px)) scale(.97)}50%{transform:translate(calc(var(--amp)*-.6px),calc(var(--amp)*-.6px)) scale(.97)}75%{transform:translate(calc(var(--amp)*.8px),0) scale(.97)}100%{transform:translate(calc(var(--amp)*-1px),0) scale(.97)}}
+@keyframes holdPop{0%{transform:scale(.97)}45%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes holdFlash{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(1.7)}}
+@media (prefers-reduced-motion:reduce){.hold-btn.holding,.hold-btn.released,.hold-btn.released .hold-flash{animation:none}}
 .chip.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:650}
 .btn-danger{background:var(--red-fill);color:#fff}
 .btn-danger-ghost{background:transparent;color:var(--red)}
@@ -273,6 +284,29 @@ details summary{list-style:none;cursor:pointer}details summary::-webkit-details-
 @keyframes ringOut2{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
 @keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(220deg)}}
 @media (prefers-reduced-motion:reduce){#celebrate *,#celebrate *::before,#celebrate *::after{animation:none !important}.spark-bit{display:none}}
+
+/* dipped below target */
+#slip{position:fixed;inset:0;z-index:110;display:none;place-items:center;padding:24px;background:rgba(0,0,0,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#slip.open{display:grid}
+:root[data-mode="day"] #slip{background:rgba(245,239,228,.95)}
+.slip-box{position:relative;text-align:center;max-width:320px;width:100%}
+.slip-ring{position:relative;width:136px;height:136px;margin:0 auto 22px;animation:cardIn .4s backwards,slipShake .55s 1.05s ease-in-out}
+.slip-ring svg{display:block;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.slip-ring circle{fill:none;stroke-width:9}
+.slip-track{stroke:var(--sec-2)}
+.slip-arc{stroke:var(--accent);stroke-dasharray:var(--p,98) 100;animation:slipArc .75s .6s cubic-bezier(.5,0,.2,1) backwards}
+.slip-gap{stroke:var(--red);stroke-dasharray:var(--g,2) 100;stroke-dashoffset:var(--o,-98);filter:drop-shadow(0 0 5px var(--red));animation:slipGap .8s 1.05s ease-out backwards}
+.slip-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.slip-mid b{font-size:32px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.slip-delta{font-size:13px;font-weight:700;color:var(--red);animation:slipDelta .6s 1.05s cubic-bezier(.2,.9,.3,1.3) backwards}
+.slip-box h2{margin:0 0 6px;font-size:26px;animation:cardIn .45s .25s backwards}
+.slip-box p{margin:0 0 22px;color:var(--text-muted);white-space:pre-line;animation:cardIn .45s .35s backwards}
+.slip-box .btn{animation:cardIn .45s .45s backwards}
+@keyframes slipArc{from{stroke-dasharray:100 100}to{stroke-dasharray:var(--p,98) 100}}
+@keyframes slipGap{0%{opacity:0;stroke-width:9}35%{opacity:1;stroke-width:16}100%{opacity:1;stroke-width:9}}
+@keyframes slipDelta{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slipShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px) rotate(-2deg)}40%{transform:translateX(6px) rotate(1.5deg)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+@media (prefers-reduced-motion:reduce){#slip *{animation:none !important}}
 
 /* backup notice */
 .notice{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;font-size:13px;box-shadow:inset 0 0 0 1px var(--accent-line)}
@@ -627,7 +661,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <div class="label-muted" id="gdCash" style="margin-bottom:6px"></div>
     <div id="gdQuick" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
     <input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="gdAmount" data-label="Amount (RM)" placeholder="Amount (RM)" aria-label="Amount" />
-    <div class="row-2"><button type="button" class="btn btn-ghost hold-btn" id="gdTake" aria-label="Take out, press and hold to confirm"><span class="hold-fill" aria-hidden="true"></span><span class="hold-label" id="gdTakeLabel">Take out</span></button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
+    <div class="row-2"><button type="button" class="btn btn-ghost hold-btn" id="gdTake" aria-label="Take out, press and hold to confirm"><span class="hold-fill" aria-hidden="true"></span><span class="hold-edge" aria-hidden="true"></span><span class="hold-flash" aria-hidden="true"></span><span class="hold-label" id="gdTakeLabel">Take out</span></button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
     <p class="note" id="gdNote" style="margin:0;text-align:center">This only sets money aside. It is not logged as an expense.</p>
     <div id="gdHistory"></div>
   </div>
@@ -718,6 +752,15 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
   <div class="cele-medal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.500 4.500 4.500L19 7.500"/></svg></div>
   <h2 id="celeTitle">Goal reached!</h2><p id="celeMsg"></p>
   <button type="button" class="btn btn-glow btn-block" id="celeClose">Nice!</button>
+</div></div>
+
+<div id="slip" role="dialog" aria-modal="true" aria-labelledby="slipTitle"><div class="slip-box">
+  <div class="slip-ring" id="slipRing">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="slip-track" cx="60" cy="60" r="52"/><circle class="slip-arc" cx="60" cy="60" r="52" pathLength="100"/><circle class="slip-gap" cx="60" cy="60" r="52" pathLength="100"/></svg>
+    <div class="slip-mid"><b id="slipPct">100%</b><span class="slip-delta" id="slipDelta"></span></div>
+  </div>
+  <h2 id="slipTitle">Dipped below target</h2><p id="slipMsg"></p>
+  <button type="button" class="btn btn-glow btn-block" id="slipClose">Got it</button>
 </div></div>
 
 <div class="modal-backdrop" id="welcomeModal"><div class="sheet">
@@ -1025,12 +1068,22 @@ const cs = { input: null, expr: "", prev: "", res: false, err: false };
 const CALC_OPS = "+−×÷";
 const fmtResult = (v) => v.toFixed(2).replace("-", "−");
 
+const fmtCalc = (s) => String(s).replace(/\d+(?:\.\d*)?/g, (m) => {
+  const i = m.indexOf("."), ip = i < 0 ? m : m.slice(0, i);
+  return ip.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (i < 0 ? "" : m.slice(i));
+});
 function calcRender() {
   const d = $("calcDisp");
-  d.textContent = cs.err ? "Invalid" : (cs.expr || "0");
+  d.textContent = cs.err ? "Invalid" : fmtCalc(cs.expr || "0");
   d.className = "calc-disp" + (cs.err ? " err" : cs.res ? " done" : !cs.expr ? " empty" : "");
   d.scrollLeft = d.scrollWidth;
-  $("calcPrev").textContent = cs.res ? cs.prev : "";
+  let prev = "";
+  if (cs.res) prev = fmtCalc(cs.prev);
+  else if (!cs.err && /[+−×÷]/.test(cs.expr.replace(/^−/, ""))) {      // live "= result" while typing a formula
+    const v = calcValue();
+    if (v !== null) prev = "= " + fmtCalc(fmtResult(v));
+  }
+  $("calcPrev").textContent = prev;
 }
 function calcValue() {            // evaluate current expression (tolerates trailing operators / open brackets)
   let s = cs.expr;
@@ -1267,6 +1320,16 @@ const SOUNDS = {                                    // one family: Save & Paid l
   undo: [
     { type: "sine",     f: 659.25, to: 440, glide: .08, at: 0, dur: .112, peak: .084, attack: .016 },
     { type: "triangle", f: 659.25, to: 440, glide: .08, at: 0, dur: .09,  peak: .01,  attack: .018 }
+  ],
+  // Dip: goal slips below target. A5 falls to A4 with a low soft body, ~0.5s
+  dip: [
+    { type: "sine",     f: 880,    to: 659.25, glide: .12, at: 0,   dur: .16, peak: .10, attack: .005 },
+    { type: "sine",     f: 659.25, to: 440,    glide: .22, at: .13, dur: .36, peak: .10, attack: .006 },
+    { type: "triangle", f: 220,                            at: .13, dur: .36, peak: .035, attack: .012 }
+  ],
+  // Take: a small soft step down for a normal take-out, ~95ms
+  take: [
+    { type: "sine", f: 783.99, to: 587.33, glide: .05, at: 0, dur: .095, peak: .09, attack: .006 }
   ]
 };
 function renderSound(ctx, name, t0) {
@@ -1437,14 +1500,34 @@ function celebrate(g) {
   $("toast").classList.remove("show", "has-action");
   $("celebrate").classList.add("open"); $("celeClose").focus({ preventScroll: true }); playSound("goal");
 }
+function slipBelow(g, taken) {
+  const p = goalPlan(g, todayISO()), ring = $("slipRing"), to = Math.floor(p.pct);
+  ring.style.setProperty("--p", p.pct.toFixed(2));
+  ring.style.setProperty("--g", (100 - p.pct).toFixed(2));
+  ring.style.setProperty("--o", (-p.pct).toFixed(2));
+  $("slipDelta").textContent = `−${formatRM(taken)}`;
+  $("slipMsg").textContent = `${g.name}\n${formatRM(p.saved)} of ${formatRM(g.target)}\n${formatRM(p.left)} to go · ` + (p.days > 0 ? `${p.days} ${p.days === 1 ? "day" : "days"} left` : "due today");
+  const el = $("slipPct"); cancelAnimationFrame(el._r); el.textContent = "100%";
+  const t0 = performance.now() + 600, D = 750;                    // counts down in sync with the arc
+  const step = (t) => {
+    const k = Math.max(0, Math.min(1, (t - t0) / D)), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(100 + (to - 100) * e) + "%";
+    if (k < 1) el._r = requestAnimationFrame(step);
+  };
+  if (reducedMotion()) el.textContent = to + "%"; else el._r = requestAnimationFrame(step);
+  $("slip").classList.add("open"); $("slipClose").focus({ preventScroll: true }); playSound("dip");
+}
 function moveGoalMoney(sign) {
   const g = findGoal(activeGoal); if (!g) return;
   const amount = parseFloat($("gdAmount").value);
   if (!Number.isFinite(amount) || amount <= 0) { toast("Enter an amount first"); return; }
   if (sign < 0 && amount > goalSaved(g)) { toast(`Only ${formatRM(goalSaved(g))} saved in this goal`); return; }
+  const wasDone = goalSaved(g) >= g.target;                       // already at/above target before this move
   const rec = { id: uid("gh"), amount: sign * amount, date: todayISO() }, goalRef = g.id;
   g.history.push(rec);
   const reached = syncGoalReached(g, todayISO());
+  // only when a take-out pushes a reached goal BELOW its target, before the due date
+  const slipped = sign < 0 && wasDone && goalSaved(g) < g.target && todayISO() <= g.date;
   $("gdAmount").value = ""; resetGdMode(); $("goalDetailModal").classList.remove("open"); renderAll();
   if (reached) { celebrate(g); return; }
   const short = sign > 0 && computeFreeCash(state) < 0;
@@ -1452,11 +1535,14 @@ function moveGoalMoney(sign) {
     const x = findGoal(goalRef); if (!x || !x.history.some(h => h.id === rec.id)) return;
     const rest = x.history.filter(h => h.id !== rec.id);
     if (sumBy(rest, h => h.amount) < 0) { toast("Can’t undo: later withdrawals use this money"); return; }
-    const wasDone = !!x.reachedDate, when = x.reachedDate;
-    x.history = rest; syncGoalReached(x, todayISO()); if (wasDone && x.reachedDate) x.reachedDate = when;
+    const wasDone2 = !!x.reachedDate, when = x.reachedDate;
+    x.history = rest; syncGoalReached(x, todayISO()); if (wasDone2 && x.reachedDate) x.reachedDate = when;
+    $("slip").classList.remove("open");
     renderAll(); toast("Undone"); playSound("undo");
   });
   if (sign > 0) playSound("save");
+  else if (slipped) slipBelow(g, amount);
+  else playSound("take");
 }
 window.removeGoalRecord = (hid) => {
   const g = findGoal(activeGoal), h = g && g.history.find(x => x.id === hid); if (!h) return;
@@ -2073,8 +2159,8 @@ $("closeGoalDetail").addEventListener("click", () => $("goalDetailModal").classL
 $("gdEdit").addEventListener("click", () => { const g = findGoal(activeGoal); if (!g) return; $("goalDetailModal").classList.remove("open"); openGoalForm(g); });
 $("gdAdd").addEventListener("click", () => moveGoalMoney(1));
 (function holdToTake() {              // Take out must be pressed and held: a second, deliberate confirmation
-  const btn = $("gdTake"), HOLD = 900;
-  let timer = 0, t0 = 0, done = false;
+  const btn = $("gdTake"), label = $("gdTakeLabel"), HOLD = 900;
+  let timer = 0, raf = 0, t0 = 0, tick = 0, busy = false;
   const okToStart = () => {
     const g = findGoal(activeGoal); if (!g) return false;
     const amount = parseFloat($("gdAmount").value);
@@ -2082,15 +2168,34 @@ $("gdAdd").addEventListener("click", () => moveGoalMoney(1));
     if (amount > goalSaved(g)) { toast(`Only ${formatRM(goalSaved(g))} saved in this goal`); return false; }
     return true;
   };
+  const loop = () => {                // live %, shake that grows with progress, haptic ticks at 1/3 and 2/3
+    const p = Math.min(1, (performance.now() - t0) / HOLD);
+    btn.style.setProperty("--amp", (p * p * 1.8).toFixed(2));
+    label.textContent = `Hold ${Math.floor(p * 100)}%`;
+    const step = p >= .67 ? 2 : p >= .34 ? 1 : 0;
+    if (step > tick) { tick = step; buzz(10 + step * 6); }
+    if (p < 1) raf = requestAnimationFrame(loop);
+  };
+  const complete = () => {
+    timer = 0; busy = true; cancelAnimationFrame(raf);
+    btn.classList.remove("holding"); void btn.offsetWidth; btn.classList.add("released");
+    label.textContent = "✓ Taken out"; buzz([18, 40, 18]);
+    setTimeout(() => {                // let the flash play, then do the move
+      moveGoalMoney(-1);
+      btn.classList.remove("released"); btn.style.setProperty("--amp", "0"); busy = false; paintGdMode();
+    }, 380);
+  };
   const start = () => {
-    if (timer || !okToStart()) return;
-    done = false; t0 = performance.now(); btn.classList.add("holding"); buzz(10);
-    timer = setTimeout(() => { timer = 0; done = true; btn.classList.remove("holding"); buzz([18, 40, 18]); moveGoalMoney(-1); }, HOLD);
+    if (timer || busy || !okToStart()) return;
+    t0 = performance.now(); tick = 0; btn.classList.add("holding"); buzz(10);
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+    timer = setTimeout(complete, HOLD);
   };
   const cancel = () => {
     if (!timer) return;
-    clearTimeout(timer); timer = 0; btn.classList.remove("holding");
-    if (performance.now() - t0 < 350) toast("Press and hold Take out to confirm");   // a quick tap: explain, don't just do nothing
+    clearTimeout(timer); timer = 0; cancelAnimationFrame(raf);
+    btn.classList.remove("holding"); btn.style.setProperty("--amp", "0"); paintGdMode();
+    if (performance.now() - t0 < 350) toast("Press and hold Take out to confirm");
   };
   btn.style.setProperty("--hold", HOLD + "ms");
   btn.addEventListener("pointerdown", (e) => { if (e.button) return; e.preventDefault(); start(); });
@@ -2124,6 +2229,7 @@ $("goalDelete").addEventListener("click", () => {
   askConfirm("Delete goal?", `${g.name} · ${formatRM(goalSaved(g))} saved\nThe money returns to your available balance.`, "Delete", () => { state.goals = state.goals.filter(x => x.id !== g.id); $("goalModal").classList.remove("open"); renderAll(); });
 });
 $("celeClose").addEventListener("click", () => $("celebrate").classList.remove("open"));
+$("slipClose").addEventListener("click", () => $("slip").classList.remove("open"));
 $("testGoalSoundBtn").addEventListener("click", () => { if (!soundOn) toast("Turn on Sound Effects first"); else playSound("goal"); });
 $("catTiles").addEventListener("click", (e) => { const b = e.target.closest("[data-cat]"); if (!b) return; $("txCategory").value = b.dataset.cat; syncPickers(); buzz(6); });
 document.querySelectorAll(".day-chip").forEach(b => b.addEventListener("click", () => { $("txDate").value = isoDaysAgo(+b.dataset.day); syncDayChips(); }));
