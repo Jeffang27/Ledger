@@ -13,175 +13,206 @@
 <link id="faviconPng" rel="icon" type="image/png" sizes="180x180" href="" />
 <link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
 <style>
-:root{--bg-black:#000;--bg-elevated:#111114;--bg-card:#18181c;--bg-card-2:#222228;--text-white:#fff;--text-muted:#9e9ea8;--accent-green:#A9FF3B;--accent-green-soft:rgba(169,255,59,.14);--accent-red:#ff453a;--accent-red-soft:rgba(255,69,58,.14);--border:rgba(255,255,255,.08);--radius-lg:18px;--radius-md:12px;--radius-sm:12px;--fs-s:12px;--fs-m:16px;--fs-xl:32px;--nav-h:60px}
+/* ============ COLOR SYSTEM 60 / 30 / 10 ============
+   60% base      : black canvas + deep card surface
+   30% secondary : olive-charcoal controls, nav, borders, supporting text
+   10% accent    : #A9FF3B, only for primary action / active state / key data
+   Red is semantic only (overdue, delete, negative). */
+:root{
+--base:#000;--base-card:#0e100c;
+--sec-1:#171a14;--sec-2:#21251d;--sec-3:#2e3328;--border:#262a21;--border-strong:#383e31;
+--text:#f5f7f2;--text-muted:#a3a99a;
+--accent:#A9FF3B;--accent-soft:rgba(169,255,59,.12);--accent-line:rgba(169,255,59,.32);--on-accent:#0a1200;
+--red:#ff6258;--red-fill:#d9362c;--red-soft:rgba(255,98,88,.14);
+--radius-lg:20px;--radius-md:12px;--fs-xs:11px;--fs-s:12.5px;--fs-m:16px;--fs-xl:40px;--nav-h:60px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-html{background:#000}
+html{background:var(--base)}
 html,body{min-height:100%}
-body{margin:0;padding:0;background:var(--bg-black);color:var(--text-white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:var(--fs-m);line-height:1.35;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+body{margin:0;padding:0;background:var(--base);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;font-size:var(--fs-m);line-height:1.35;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+button{-webkit-user-select:none;user-select:none}
 #scroller{display:block}
 /* min-height keeps EVERY tab scrollable, so iOS uses the same viewport state on all pages (nav no longer jumps) */
-.app{max-width:520px;margin:0 auto;min-height:calc(100vh + 2px);padding:calc(16px + env(safe-area-inset-top)) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 40px)}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-.brand-row{display:flex;align-items:center;gap:12px;min-width:0}
-.app-icon-badge{width:40px;height:40px;border-radius:12px;background:var(--bg-card);border:1px solid rgba(169,255,59,.4);display:grid;place-items:center;flex-shrink:0}
-.brand h1{margin:0;font-size:var(--fs-m);font-weight:700;line-height:1.2;white-space:nowrap}
-.brand p{margin:2px 0 0;font-size:var(--fs-s);font-weight:500;color:var(--accent-green);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.app{max-width:520px;margin:0 auto;min-height:calc(100vh + 2px);padding:calc(16px + env(safe-area-inset-top)) 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 80px)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.brand-row{display:flex;align-items:center;gap:10px;min-width:0}
+.brand{min-width:0}
+.brand h1{margin:0;font-size:var(--fs-m);font-weight:700;line-height:1.2;white-space:nowrap;letter-spacing:.01em}
+.brand p{margin:2px 0 0;font-size:var(--fs-s);line-height:1.3;color:var(--text-muted)}
+.brand p .hl{color:var(--text);font-weight:600}
+.app-icon-badge{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 12px rgba(169,255,59,.18)}
 .header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
-select,input,button,textarea{font-family:inherit;font-size:var(--fs-m);color:var(--text-white)}
-select,input,textarea{background:var(--bg-card-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:0 12px;width:100%;min-width:0;height:44px;outline:none;-webkit-appearance:none;appearance:none}
-select{background-image:linear-gradient(45deg,transparent 50%,#9e9ea8 50%),linear-gradient(135deg,#9e9ea8 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
-input[type=date]{display:flex;align-items:center;justify-content:flex-start;line-height:42px;text-align:left;padding-top:0;padding-bottom:0}
+
+/* form controls (16px = no iOS focus zoom) */
+select,input,button,textarea{font-family:inherit;font-size:var(--fs-m);color:var(--text)}
+select,input,textarea{background-color:var(--sec-1);border:1px solid var(--border);border-radius:var(--radius-md);padding:0 12px;width:100%;min-width:0;height:48px;outline:none;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,#a3a99a 50%),linear-gradient(135deg,#a3a99a 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px;text-overflow:ellipsis}
+::placeholder{color:#7f8577}
+input[type=date]{display:flex;align-items:center;justify-content:flex-start;line-height:46px;text-align:left;padding-top:0;padding-bottom:0}
 input[type=date]::-webkit-datetime-edit{display:inline-flex;align-items:center;padding:0;line-height:1.2}
 input[type=date]::-webkit-datetime-edit-fields-wrapper{display:inline-flex;align-items:center;padding:0}
 input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;padding:0;line-height:1.2}
-select:focus,input:focus{border-color:var(--accent-green)}
-.month-sel{width:auto;height:36px;padding:0 30px 0 12px}
-input[type=checkbox]{width:46px;height:28px;padding:0;border-radius:999px;position:relative;flex-shrink:0;cursor:pointer;transition:background .18s}
-input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .18s}
-input[type=checkbox]:checked{background:var(--accent-green);border-color:var(--accent-green)}
-input[type=checkbox]:checked::after{transform:translateX(18px)}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7)}
+select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.month-sel{width:auto;height:36px;font-size:13px;font-weight:600;padding:0 26px 0 12px;border-radius:999px;background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px}
+.filter-sel{height:40px;font-size:var(--fs-m)}
+input[type=checkbox]{width:50px;height:30px;padding:0;border-radius:999px;position:relative;flex-shrink:0;cursor:pointer;background:var(--sec-3);transition:background-color .18s}
+input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .18s}
+input[type=checkbox]:checked{background-color:var(--accent);border-color:var(--accent)}
+input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--on-accent)}
 label{display:block;margin-bottom:6px}
-.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);display:grid;place-items:center;cursor:pointer}
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.icon-btn{position:relative;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--sec-1);display:grid;place-items:center;cursor:pointer;padding:0}
+
+/* cards + type */
+.card{background:var(--base-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
 .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .label-muted,.meta,.empty{font-size:var(--fs-s);font-weight:400;color:var(--text-muted)}
-.empty{padding:4px 0}
-.hero-amount{font-size:var(--fs-xl);font-weight:700;line-height:1.15;margin:4px 0 8px}
-.fund-strip{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:var(--fs-s)}
-.fund-strip strong{font-size:var(--fs-m)}
-.fund-edit-btn{background:none;border:none;padding:0;font-size:var(--fs-s);text-align:left;cursor:pointer;display:inline-flex;align-items:baseline;gap:6px}
-.fund-edit-hint{font-size:var(--fs-s);color:var(--text-muted);text-decoration:underline}
+.empty{padding:16px 8px;text-align:center;line-height:1.5}
+.hero-amount{font-size:var(--fs-xl);font-weight:700;line-height:1.1;margin:6px 0 10px;letter-spacing:-.02em;overflow-wrap:anywhere}
 .mom-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:var(--fs-s);font-weight:600}
-.mom-down{background:var(--accent-green-soft);color:var(--accent-green)}
-.mom-up{background:var(--accent-red-soft);color:var(--accent-red)}
-.mom-flat{background:rgba(255,255,255,.08);color:var(--text-muted)}
-.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;margin-top:16px}
-.stat-val{font-size:var(--fs-m);font-weight:700;margin-top:2px;overflow-wrap:anywhere}
-.green{color:var(--accent-green)}.red{color:var(--accent-red)}.muted{color:var(--text-muted)}
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:30px;margin:0 0 12px;font-size:var(--fs-m);font-weight:600}
-.btn{display:inline-flex;align-items:center;justify-content:center;height:44px;margin:0;border:none;border-radius:var(--radius-md);padding:0 16px;font-size:var(--fs-m);font-weight:600;cursor:pointer;white-space:nowrap}
-.btn-green,.btn-glow{background:var(--accent-green);color:#000}
-.btn:active{opacity:.85}
-.btn-ghost{background:var(--bg-card-2);color:var(--text-white);border:1px solid var(--border)}
-.btn-danger{background:var(--accent-red);color:#fff}
-.btn-sm{height:30px;padding:0 12px;font-size:var(--fs-s);border-radius:8px}
-.fab-glow{position:fixed;right:16px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);width:48px;height:48px;border-radius:50%;border:none;background:var(--accent-green);color:#000;display:grid;place-items:center;cursor:pointer;z-index:25;box-shadow:0 4px 16px rgba(0,0,0,.5)}
-.row{padding:12px 0;border-bottom:1px solid var(--border)}
+.mom-down{background:var(--accent-soft);color:var(--accent)}
+.mom-up{background:var(--red-soft);color:var(--red)}
+.mom-flat{background:var(--sec-2);color:var(--text-muted)}
+.green{color:var(--accent)}.red{color:var(--red)}.muted{color:var(--text-muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:32px;margin:0 0 12px;font-size:var(--fs-m);font-weight:600}
+.section-sub{display:block;font-size:var(--fs-s);font-weight:400;color:var(--text-muted);margin-top:2px}
+.section-sub:empty{display:none}
+
+/* dashboard: lime glow reserved for hero; other cards get a faint lime hairline */
+#tab-dashboard .card{border-color:rgba(169,255,59,.18)}
+#tab-dashboard .card.hero{border-color:rgba(169,255,59,.5);box-shadow:0 0 18px rgba(169,255,59,.14),inset 0 0 18px rgba(169,255,59,.04)}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+.stat-box{background:var(--sec-1);border:1px solid var(--border);border-radius:14px;padding:10px 12px;min-width:0}
+.stat-btn{display:block;width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.stat-btn:active{background:var(--sec-2)}
+.stat-val{font-size:17px;font-weight:700;margin-top:4px;overflow-wrap:anywhere}
+.fund-edit-hint{float:right;color:var(--accent);font-weight:600}
+
+/* buttons: solid lime = primary only; tint = repeated row action; ghost = secondary */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:48px;margin:0;border:1px solid transparent;border-radius:var(--radius-md);padding:0 16px;font-size:var(--fs-m);font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:active,.chip:active,.icon-btn:active,.seg button:active{transform:scale(.97);opacity:.85}
+.btn:disabled{opacity:.55;cursor:default}
+.btn-glow,.btn-green{background:var(--accent);color:var(--on-accent);box-shadow:0 0 10px rgba(169,255,59,.22)}
+.btn-tint{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+.btn-ghost{background:var(--sec-2);color:var(--text);border-color:var(--border-strong)}
+.btn-danger{background:var(--red-fill);color:#fff}
+.btn-danger-ghost{background:transparent;color:var(--red);border-color:rgba(255,98,88,.4)}
+.btn-sm{height:32px;padding:0 12px;font-size:var(--fs-s);border-radius:10px}
+.btn-icon{width:36px;padding:0;color:var(--text-muted)}
+.btn-icon svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* invisible hit-area: small visuals, ~44px touch target */
+.btn-sm::after,.icon-btn::after{content:"";position:absolute;inset:-6px -3px}
+.fab-glow{position:fixed;right:16px;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);width:52px;height:52px;border-radius:50%;border:none;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;cursor:pointer;z-index:25;box-shadow:0 0 16px rgba(169,255,59,.35),0 4px 16px rgba(0,0,0,.55)}
+
+/* list rows */
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
 .row:first-child{padding-top:0}
 .row:last-child{border-bottom:none;padding-bottom:0}
-.row-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.row-title{min-width:0;font-weight:600;overflow-wrap:anywhere}
-.row-amt{font-weight:600;white-space:nowrap}
-.row-meta{font-size:var(--fs-s);color:var(--text-muted);margin-top:2px;overflow-wrap:anywhere}
-.row-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px}
-.row-actions .grow{margin-right:auto}
-.tag-work,.tag-paid,.tag-over{display:inline-block;font-size:var(--fs-s);font-weight:500;line-height:1.3;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
-.tag-work{background:var(--accent-green-soft);color:var(--accent-green)}
-.tag-paid{background:rgba(255,255,255,.1);color:var(--text-muted)}
-.tag-over{background:var(--accent-red-soft);color:var(--accent-red)}
-.progress-track{height:4px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;margin-top:8px}
-.progress-fill{height:100%;background:var(--accent-green);border-radius:999px}
+.row-head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.row-title{min-width:0;font-weight:600;font-size:15px;overflow-wrap:anywhere}
+.row-amt{font-weight:700;font-size:15px;white-space:nowrap}
+.row-meta{grid-column:1;grid-row:2;font-size:var(--fs-s);color:var(--text-muted);margin-top:6px;overflow-wrap:anywhere}
+.row-meta .late{color:var(--red);font-weight:600}
+.row-actions{grid-column:2;grid-row:2;display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:6px}
+.row.is-done .row-title,.row.is-done .row-amt{color:var(--text-muted)}
+.tag-work,.tag-paid,.tag-over{display:inline-block;font-size:var(--fs-xs);font-weight:600;line-height:1.4;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
+.tag-work{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.tag-paid{background:var(--sec-2);color:var(--text-muted)}
+.tag-over{background:var(--red-soft);color:var(--red)}
+.progress-track{grid-column:1/-1;grid-row:3;height:5px;background:var(--sec-2);border-radius:999px;overflow:hidden;margin-top:10px}
+.progress-fill{height:100%;background:var(--accent);border-radius:999px}
+
+/* ledger date groups */
+.day-head{display:flex;justify-content:space-between;gap:8px;margin:16px -16px 12px;padding:6px 16px;background:var(--sec-1);font-size:var(--fs-s);font-weight:600;color:var(--text-muted)}
+.day-head:first-child{margin-top:4px}
+.day-group .row:first-child{padding-top:0}
+
+/* forms */
 .form-grid{display:grid;gap:12px}
 .row-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;background:var(--bg-card-2);padding:8px 12px;border-radius:var(--radius-md);border:1px solid var(--border)}
-.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.chip{height:32px;padding:0 14px;border-radius:999px;font-size:var(--fs-s);border:1px solid var(--border);background:var(--bg-card-2);color:var(--text-muted);cursor:pointer}
-.chip.active{background:var(--accent-green);color:#000;border-color:var(--accent-green);font-weight:600}
-.cat-row{margin-bottom:12px}.cat-row:last-child{margin-bottom:0}
-.cat-meta{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-s)}
+.row-save{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:10px;margin-top:4px}
+.row-save .btn{padding:0 8px;font-size:15px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;background:var(--sec-1);padding:8px 12px;border-radius:var(--radius-md);border:1px solid var(--border);margin:0;cursor:pointer}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--sec-1);border:1px solid var(--border);border-radius:14px}
+.seg button{height:36px;border:none;border-radius:10px;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0 4px}
+.seg button.active{background:var(--sec-3);color:var(--text);box-shadow:inset 0 -2px 0 var(--accent)}
+.amount-field label{text-align:center}
+.amount-field input.calc{height:76px;font-size:38px;text-align:center;border-radius:16px;border-color:var(--accent-line)}
+
+/* chips, presets, summary, toast */
+.filter-bar{margin-bottom:12px}
+.preset-list{display:flex;flex-wrap:wrap;gap:8px}
+.preset-list .empty{width:100%}
+.chip{height:40px;padding:0 14px;border-radius:999px;font-size:13px;border:1px solid var(--border-strong);background:var(--sec-1);color:var(--text);cursor:pointer}
+.chip.preset .muted{margin-left:4px}
+.chip.preset.del{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;margin-bottom:4px;background:var(--sec-2);border-radius:var(--radius-md)}
+.sum-val{display:block;font-weight:700;font-size:18px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 78px);transform:translate(-50%,8px);width:max-content;max-width:calc(100% - 32px);padding:10px 16px;border-radius:999px;background:var(--sec-3);border:1px solid var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* categories */
+.cat-row{margin-bottom:14px}.cat-row:last-child{margin-bottom:0}
+.cat-meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.cat-meta b{white-space:nowrap}
+.cat-meta .muted{font-weight:400;display:inline-block;min-width:48px;text-align:right}
 .cat-row .progress-track{margin-top:6px}
-.bottom-nav{position:fixed;left:0;right:0;bottom:0;transform:translate3d(0,0,0);height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 12px env(safe-area-inset-bottom);display:flex;justify-content:space-around;align-items:center;background:rgba(16,16,20,.78);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);border-top:1px solid rgba(255,255,255,.10);box-shadow:0 -8px 24px rgba(0,0,0,.4);z-index:20}
+.cat-row:not(:first-child) .progress-fill{background:#6f9f35}
+
+/* bottom nav (position unchanged) */
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;transform:translate3d(0,0,0);height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 12px env(safe-area-inset-bottom);display:flex;justify-content:space-around;align-items:center;background:rgba(18,21,15,.82);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);border-top:1px solid var(--border-strong);box-shadow:0 -8px 24px rgba(0,0,0,.4);z-index:20}
 .nav-btn{position:relative;z-index:1;flex:1;max-width:96px;height:48px;background:none;border:none;color:var(--text-muted);font-size:var(--fs-s);line-height:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:0 8px}
 .nav-btn svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.6;fill:none}
-.nav-btn.active{color:var(--accent-green);font-weight:600}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.nav-btn.active{color:var(--accent);font-weight:600}
+.nav-pill{position:absolute;top:6px;left:0;height:48px;width:0;border-radius:16px;background:var(--accent-soft);border:1px solid rgba(169,255,59,.22);opacity:0;pointer-events:none}
+.nav-pill.ready{transition:transform .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1)}
+
+/* modals */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.68);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
 .modal-backdrop.open{display:flex}
 #confirmModal{z-index:60}
 #cfMsg{white-space:pre-line;margin:0 0 16px}
-.modal{background:rgba(26,26,32,.97);box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);padding:16px;width:100%;max-width:460px;max-height:85vh;max-height:85dvh;overflow-y:auto}
-pre{background:var(--bg-black);border:1px solid var(--border);padding:10px;border-radius:var(--radius-md);font-size:var(--fs-s);white-space:pre-wrap;word-break:break-all;color:var(--text-muted);margin:0}
+.modal{background:var(--base-card);box-shadow:0 20px 60px rgba(0,0,0,.6);border:1px solid var(--border-strong);border-radius:var(--radius-lg);padding:16px;width:100%;max-width:460px;max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain}
+.group-label{font-size:var(--fs-s);font-weight:600;color:var(--text-muted);margin-bottom:6px}
+.danger-zone{border-top:1px solid var(--border);padding-top:12px}
+.danger-zone .btn{width:100%}
+pre{background:var(--base);border:1px solid var(--border);padding:10px;border-radius:var(--radius-md);font-size:var(--fs-s);white-space:pre-wrap;word-break:break-all;color:var(--text-muted);margin:0;-webkit-user-select:text;user-select:text}
 .hidden{display:none !important}
 
-/* subtle glow */
-.btn-glow,.btn-green{box-shadow:0 0 12px rgba(169,255,59,.35)}
-.fab-glow{box-shadow:0 0 16px rgba(169,255,59,.45),0 4px 16px rgba(0,0,0,.5)}
-.chip.active{box-shadow:0 0 10px rgba(169,255,59,.35)}
-.progress-fill{box-shadow:0 0 8px rgba(169,255,59,.5)}
-.nav-btn.active svg{filter:drop-shadow(0 0 4px rgba(169,255,59,.6))}
-select:focus,input:focus{box-shadow:0 0 0 1px var(--accent-green),0 0 10px rgba(169,255,59,.25)}
-input[type=checkbox]:checked{box-shadow:0 0 10px rgba(169,255,59,.4)}
-
-/* glass app-icon badge (matches home-screen icon) */
-.app-icon-badge{background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 12px rgba(169,255,59,.25)}
-
-/* dashboard cards: subtle #A9FF3B glowing outline */
-#tab-dashboard .card{border-color:rgba(169,255,59,.55);box-shadow:0 0 0 1px rgba(169,255,59,.10),0 0 16px rgba(169,255,59,.20),inset 0 0 14px rgba(169,255,59,.05)}
-
-/* dashboard stats: aligned 2x2 */
-.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-top:16px;border-top:1px solid var(--border)}
-.stat-box{padding:14px 0 0;min-width:0}
-.stat-box:nth-child(even){padding-left:16px;border-left:1px solid var(--border)}
-.stat-box:nth-child(n+3){margin-top:14px;border-top:1px solid var(--border)}
-.stat-btn{display:block;width:100%;background:none;border:none;border-radius:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
-.stat-val{margin-top:4px}
-
-/* greeting + compact month filter */
-.brand{min-width:0}
-.brand p{margin:2px 0 0;font-size:var(--fs-s);font-weight:400;line-height:1.3;color:var(--text-white);text-transform:none;letter-spacing:0;white-space:normal}
-.brand p .hl{color:var(--accent-green);font-weight:600}
-.month-sel{height:30px;font-size:var(--fs-s);padding:0 24px 0 10px;border-radius:10px;background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;background-size:4px 4px}
-/* compact rows */
-.row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;padding:10px 0}
-.row:first-child{padding-top:0}
-.row:last-child{padding-bottom:0}
-.row-head{grid-column:1/-1}
-.row-meta{grid-column:1;grid-row:2;margin-top:2px}
-.progress-track{grid-column:1/-1;grid-row:3}
-.row-actions{grid-column:2;grid-row:2;margin-top:2px;gap:6px}
-.row-actions .btn-sm{height:26px;padding:0 10px}
-
-/* presets, ledger summary, toast */
-.preset-list{display:flex;flex-wrap:wrap;gap:8px}
-.chip.preset{color:var(--text-white)}
-.chip.preset .muted{margin-left:2px}
-.chip.preset.del{border-color:var(--accent-red);color:var(--accent-red)}
-.sum{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;margin-bottom:12px;background:var(--bg-card-2);border-radius:var(--radius-md)}
-.sum-val{font-weight:700;white-space:nowrap}
-.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 22px);transform:translate(-50%,8px);max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;background:var(--bg-card-2);border:1px solid var(--border);font-size:var(--fs-s);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;text-align:center}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-
-/* calculator inputs + keypad sheet */
-input.calc{color:var(--accent-green);font-weight:600;cursor:pointer;caret-color:transparent}
-input.calc::placeholder{color:var(--text-muted);font-weight:400}
-#calcOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:90}
+/* calculator */
+input.calc{color:var(--accent);font-weight:700;cursor:pointer;caret-color:transparent}
+input.calc::placeholder{color:#7f8577;font-weight:500}
+#calcOverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:90}
 #calcOverlay.open{display:flex}
-.calc-sheet{width:100%;max-width:520px;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(30,30,37,.98);border:1px solid rgba(255,255,255,.14);border-bottom:none;border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.6),0 0 18px rgba(169,255,59,.12)}
-@keyframes sheetUp{0%{transform:translateY(40px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.calc-sheet{width:100%;max-width:520px;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:var(--sec-1);border:1px solid var(--border-strong);border-bottom:none;border-radius:24px 24px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.6)}
 .calc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.calc-disp{display:block;min-height:64px;line-height:64px;overflow-x:auto;white-space:nowrap;text-align:right;font-size:36px;font-weight:600;color:#fff;padding:0 6px;scrollbar-width:none}
-.calc-disp::-webkit-scrollbar{display:none}
-.calc-disp.done{color:var(--accent-green);text-shadow:0 0 12px rgba(169,255,59,.45)}
-.calc-disp.empty{color:var(--text-muted)}
-.calc-disp.err{color:var(--accent-red);font-size:28px}
-.calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
-.ck{height:clamp(42px,6.2vh,54px);border:none;border-radius:14px;background:rgba(255,255,255,.10);font-size:22px;font-weight:500;cursor:pointer;color:#fff}
-.ck:active{background:rgba(255,255,255,.24)}
-.ck.fn{background:rgba(255,255,255,.18)}
-.ck.op{background:rgba(169,255,59,.16);color:var(--accent-green)}
-.ck.eq{background:var(--accent-green);color:#000;font-weight:700;box-shadow:0 0 12px rgba(169,255,59,.4)}
-
-.nav-pill{position:absolute;top:6px;left:0;height:48px;width:0;border-radius:16px;background:rgba(169,255,59,.12);border:1px solid rgba(169,255,59,.28);box-shadow:0 0 14px rgba(169,255,59,.2),inset 0 1px 0 rgba(255,255,255,.12);opacity:0;pointer-events:none}
-.nav-pill.ready{transition:transform .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1)}
-.spark{margin-top:14px}
-.spark svg{display:block}
-.spark-meta{display:flex;justify-content:space-between;margin-top:6px;font-size:var(--fs-s);color:var(--text-muted)}
-.sp-on{fill:rgba(169,255,59,.45)}.sp-off{fill:rgba(255,255,255,.10)}.sp-today{fill:rgba(255,255,255,.85)}
-.sp-max{fill:#A9FF3B;filter:drop-shadow(0 0 3px rgba(169,255,59,.8))}
 .calc-prev{min-height:18px;padding:0 6px;text-align:right;font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calc-disp{display:block;min-height:64px;line-height:64px;overflow-x:auto;white-space:nowrap;text-align:right;font-size:40px;font-weight:600;padding:0 6px;scrollbar-width:none}
+.calc-disp::-webkit-scrollbar{display:none}
+.calc-disp.done{color:var(--accent)}
+.calc-disp.empty{color:var(--text-muted)}
+.calc-disp.err{color:var(--red);font-size:28px}
+.calc-keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.ck{height:clamp(44px,6.4vh,56px);border:none;border-radius:14px;background:var(--sec-2);font-size:22px;font-weight:500;cursor:pointer}
+.ck:active{background:#454c3b}
+.ck.fn{background:var(--sec-3)}
+.ck.op{background:var(--accent-soft);color:var(--accent)}
+.ck.eq{background:var(--accent);color:var(--on-accent);font-weight:700}
 @media (max-height:520px){.ck{height:36px;font-size:18px}.calc-disp{min-height:44px;line-height:44px;font-size:28px}}
+
+/* sparkline */
+.spark{margin-top:16px}
+.spark svg{display:block}
+.spark-meta{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:var(--fs-s);color:var(--text-muted)}
+.sp-on{fill:#5d8a2a}.sp-off{fill:#2e3328}.sp-today{fill:#f5f7f2}.sp-max{fill:#A9FF3B}
+
+/* narrow phones (SE) */
+@media (max-width:360px){.brand p,.app-icon-badge{display:none}.brand h1{font-size:14px}:root{--fs-xl:34px}.stat-val{font-size:14px}.stat-box{padding:10px 8px}.row-actions{grid-column:1/-1;grid-row:3;margin-top:10px}.progress-track{grid-row:4}.cat-row .progress-track{grid-row:auto}}
 /* shared-element pulse & outward expansion splash (glass logo) */
-#appSplash{position:fixed;inset:0;background:var(--bg-black);display:grid;place-items:center;z-index:100;opacity:1;pointer-events:none;transition:opacity .48s cubic-bezier(.16,1,.3,1)}
+#appSplash{position:fixed;inset:0;background:var(--base);display:grid;place-items:center;z-index:100;opacity:1;pointer-events:none;transition:opacity .48s cubic-bezier(.16,1,.3,1)}
 #appSplash.dismissing{opacity:0}
 .splash-logo{position:relative;width:82px;height:82px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.05));border:1.5px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 0 26px rgba(169,255,59,.28);display:grid;place-items:center;transform:scale(1);opacity:1;transition:transform .56s cubic-bezier(.16,1,.3,1),opacity .44s ease-out,box-shadow .4s ease}
 .splash-logo::before{content:"";position:absolute;inset:-6px;border-radius:28px;border:1.5px solid rgba(169,255,59,.55);opacity:0;transform:scale(.96);pointer-events:none}
@@ -222,32 +253,32 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
 
   <!-- DASHBOARD -->
   <section id="tab-dashboard">
-    <div class="card">
+    <div class="card hero">
       <div class="hero-top">
         <div>
           <div class="label-muted">Monthly Spending</div>
           <div class="hero-amount" id="dashExpense">RM 0.00</div>
           <div id="momBadge" class="mom-badge mom-flat">0.00% vs last month</div>
         </div>
-        <button class="btn btn-glow btn-sm" id="quickAddBtn">+ Add</button>
+        <button class="btn btn-tint btn-sm" id="quickAddBtn">+ Add</button>
       </div>
       <div id="dashSpark" class="spark"></div>
       <div class="stats-grid">
         <button type="button" class="stat-box stat-btn" id="inlineEditFundBtn" title="Tap to edit Initial Fund">
           <div class="label-muted">Initial Fund <span class="fund-edit-hint">Edit</span></div>
-          <div class="stat-val green" id="dashInitialFund">RM 0.00</div>
+          <div class="stat-val" id="dashInitialFund">RM 0.00</div>
         </button>
         <div class="stat-box"><div class="label-muted">Total Cash</div><div class="stat-val" id="dashTotalCash">RM 0.00</div></div>
-        <div class="stat-box"><div class="label-muted">Monthly Income</div><div class="stat-val green" id="dashIncome">RM 0.00</div></div>
+        <div class="stat-box"><div class="label-muted">Monthly Income</div><div class="stat-val" id="dashIncome">RM 0.00</div></div>
         <div class="stat-box"><div class="label-muted">Monthly Net</div><div class="stat-val" id="dashNet">RM 0.00</div></div>
       </div>
     </div>
     <div class="card">
-      <div class="section-title"><span>Upcoming / Planned Outlays</span><button class="btn btn-glow btn-sm" id="addPlannedBtn">+ Add Plan</button></div>
+      <div class="section-title"><span>Upcoming Outlays<span class="section-sub" id="plannedSummary"></span></span><button class="btn btn-tint btn-sm" id="addPlannedBtn">+ Add Plan</button></div>
       <div id="plannedList"></div>
     </div>
     <div class="card">
-      <div class="section-title"><span>Category Breakdown (Expenses)</span></div>
+      <div class="section-title"><span>Spending by Category</span></div>
       <div id="categoryBreakdown"></div>
     </div>
   </section>
@@ -261,20 +292,19 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
     <div class="card">
       <div class="section-title"><span>New Income or Expense</span></div>
       <form id="txForm" class="form-grid">
-        <div class="row-2">
-          <div><label class="label-muted">Type</label><select id="txType"><option value="expense">Expense (-)</option><option value="income">Income (+)</option></select></div>
-          <div><label class="label-muted">Amount (RM)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="txAmount" data-label="Amount (RM)" placeholder="0.00" /></div>
-        </div>
+        <div class="seg" data-seg="txType" role="group" aria-label="Type"><button type="button" data-v="expense" class="active">Expense (-)</button><button type="button" data-v="income">Income (+)</button></div>
+        <select id="txType" class="hidden" aria-hidden="true"><option value="expense">Expense (-)</option><option value="income">Income (+)</option></select>
+        <div class="amount-field"><label class="label-muted" for="txAmount">Amount (RM)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="txAmount" data-label="Amount (RM)" placeholder="0.00" /></div>
         <div class="form-grid">
           <div><label class="label-muted">Category</label><select id="txCategory"></select></div>
           <div><label class="label-muted">Date</label><input type="date" id="txDate" required /></div>
         </div>
         <div><label class="label-muted">Note / Merchant</label><input type="text" id="txNote" placeholder="e.g. Lunch, Petrol, Maintenance Fee" /></div>
-        <div class="toggle-row" id="workToggleWrap">
-          <div><div style="font-weight:600;">Work Purpose</div><div class="meta">Mark if related to work / business claim</div></div>
+        <label class="toggle-row" id="workToggleWrap">
+          <span><span style="display:block;font-weight:600;">Work Purpose</span><span class="meta">Mark if related to work / business claim</span></span>
           <input type="checkbox" id="txWork" />
-        </div>
-        <div class="row-2">
+        </label>
+        <div class="row-save">
           <button type="button" class="btn btn-ghost" id="savePresetBtn">Save as preset</button>
           <button type="submit" class="btn btn-glow">Save Entry</button>
         </div>
@@ -286,16 +316,16 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
   <section id="tab-ledger" class="hidden">
     <div class="card">
       <div class="section-title"><span>Transactions</span></div>
-      <input type="text" id="ledgerSearch" placeholder="Search note, category or amount" autocomplete="off" style="margin-bottom:12px;" />
+      <input type="text" id="ledgerSearch" placeholder="Search note, category or amount" aria-label="Search transactions" autocomplete="off" style="margin-bottom:12px;" />
       <div class="row-2" style="margin-bottom:12px;">
-        <select id="ledgerScope" class="month-sel" style="width:100%;"><option value="month">This month</option><option value="all">All time</option></select>
-        <select id="ledgerCat" class="month-sel" style="width:100%;"></select>
+        <select id="ledgerScope" class="filter-sel" aria-label="Period"><option value="month">This month</option><option value="all">All time</option></select>
+        <select id="ledgerCat" class="filter-sel" aria-label="Category"></select>
       </div>
-      <div class="filter-bar">
-        <button class="chip active" data-filter="all">All</button>
-        <button class="chip" data-filter="expense">Expenses</button>
-        <button class="chip" data-filter="income">Income</button>
-        <button class="chip" data-filter="work">Work Only</button>
+      <div class="filter-bar seg">
+        <button type="button" class="active" data-filter="all">All</button>
+        <button type="button" data-filter="expense">Expenses</button>
+        <button type="button" data-filter="income">Income</button>
+        <button type="button" data-filter="work">Work Only</button>
       </div>
       <div id="txSummary"></div>
       <div id="txList"></div>
@@ -305,7 +335,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
   <!-- TERMS -->
   <section id="tab-recurring" class="hidden">
     <div class="card">
-      <div class="section-title"><span>Recurring &amp; Term Monitor</span><button class="btn btn-glow btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
+      <div class="section-title"><span>Recurring &amp; Terms<span class="section-sub" id="recSummary"></span></span><button class="btn btn-tint btn-sm" id="toggleRecurringFormBtn">+ Add Rule</button></div>
       <form id="recurringForm" class="form-grid hidden" style="margin-bottom:14px;">
         <input type="hidden" id="recId" />
         <div class="label-muted" id="recFormTitle">New Rule</div>
@@ -318,7 +348,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
           <div><label class="label-muted">Total Terms (0 = Open)</label><input type="number" inputmode="numeric" id="recTotalTerms" min="0" value="0" /></div>
           <div><label class="label-muted">Completed Terms</label><input type="number" inputmode="numeric" id="recDoneTerms" min="0" value="0" /></div>
         </div>
-        <div class="toggle-row"><span>Work Purpose</span><input type="checkbox" id="recWork" /></div>
+        <label class="toggle-row"><span>Work Purpose</span><input type="checkbox" id="recWork" /></label>
         <button type="submit" class="btn btn-glow" id="recSubmitBtn">Add Recurring Rule</button>
       </form>
       <div id="recurringList"></div>
@@ -344,16 +374,15 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
   <div class="section-title"><span>Edit Entry</span><button type="button" class="btn btn-ghost btn-sm" id="closeEditTxModal">✕</button></div>
   <form id="editTxForm" class="form-grid">
     <input type="hidden" id="editTxId" />
-    <div class="row-2">
-      <div><label class="label-muted">Type</label><select id="editTxType"><option value="expense">Expense (-)</option><option value="income">Income (+)</option></select></div>
-      <div><label class="label-muted">Amount (RM)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="editTxAmount" data-label="Amount (RM)" /></div>
-    </div>
+    <div class="seg" data-seg="editTxType" role="group" aria-label="Type"><button type="button" data-v="expense" class="active">Expense (-)</button><button type="button" data-v="income">Income (+)</button></div>
+    <select id="editTxType" class="hidden" aria-hidden="true"><option value="expense">Expense (-)</option><option value="income">Income (+)</option></select>
+    <div><label class="label-muted">Amount (RM)</label><input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="editTxAmount" data-label="Amount (RM)" /></div>
     <div class="form-grid">
       <div><label class="label-muted">Category</label><select id="editTxCategory"></select></div>
       <div><label class="label-muted">Date</label><input type="date" id="editTxDate" required /></div>
     </div>
     <div><label class="label-muted">Note / Merchant</label><input type="text" id="editTxNote" /></div>
-    <div class="toggle-row" id="editWorkToggleWrap"><span>Work Purpose</span><input type="checkbox" id="editTxWork" /></div>
+    <label class="toggle-row" id="editWorkToggleWrap"><span>Work Purpose</span><input type="checkbox" id="editTxWork" /></label>
     <button type="submit" class="btn btn-glow">Update Entry</button>
   </form>
 </div></div>
@@ -369,14 +398,14 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
       <input type="date" id="plDueDate" required />
     </div>
     <select id="plCategory"></select>
-    <div class="toggle-row"><span>Work Purpose</span><input type="checkbox" id="plWork" /></div>
+    <label class="toggle-row"><span>Work Purpose</span><input type="checkbox" id="plWork" /></label>
     <button type="submit" class="btn btn-glow" id="plSubmitBtn">Save Planned Outlay</button>
   </form>
 </div></div>
 
 <!-- SETTINGS MODAL -->
 <div class="modal-backdrop" id="settingsModal"><div class="modal">
-  <div class="section-title"><span>Settings · Initial Fund · Backup</span><button type="button" class="btn btn-ghost btn-sm" id="closeSettingsModal">✕</button></div>
+  <div class="section-title"><span>Settings</span><button type="button" class="btn btn-ghost btn-sm" id="closeSettingsModal">✕</button></div>
   <div class="form-grid">
     <div>
       <label class="label-muted" for="initialFundInput">Initial Fund (Starting Cash in RM)</label>
@@ -386,7 +415,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
       </div>
     </div>
     <div>
-      <div class="label-muted" style="margin-bottom:6px;">Backup</div>
+      <div class="group-label">Backup</div>
       <div class="row-3">
         <button type="button" class="btn btn-ghost btn-sm" id="exportJsonBtn">Export JSON</button>
         <button type="button" class="btn btn-ghost btn-sm" id="exportCsvBtn">Export CSV</button>
@@ -397,7 +426,7 @@ section[id^="tab-"]:not(.hidden){animation:tabIn .22s cubic-bezier(.22,1,.36,1)}
       <button type="button" class="btn btn-ghost btn-sm" id="saveIconBtn">Save Icon PNG</button>
       <button type="button" class="btn btn-ghost btn-sm" id="runSelfTestBtn">Run Self-Test</button>
     </div>
-    <button type="button" class="btn btn-ghost btn-sm" id="resetDemoBtn" style="color:var(--accent-red);">Reset to Sample Data</button>
+    <div class="danger-zone"><button type="button" class="btn btn-danger-ghost btn-sm" id="resetDemoBtn">Reset to Sample Data</button></div>
     <div>
       <div class="label-muted" style="margin-bottom:6px;">Apple Shortcuts URL Template</div>
       <pre id="shortcutUrlBox"></pre>
@@ -852,7 +881,7 @@ function setMoney(id, val) {      // count-up animation for dashboard figures
 }
 function renderSpark(daily) {     // mini bar chart of daily spending for the selected month
   const el = $("dashSpark"), max = Math.max(0, ...daily);
-  if (!max) { el.innerHTML = `<div class="empty">No spending recorded for ${selectedMonth}.</div>`; return; }
+  if (!max) { el.innerHTML = `<div class="empty">No spending recorded for ${fmtYM(selectedMonth)}.</div>`; return; }
   const n = daily.length, W = 300, H = 44, gap = 2, bw = (W - gap * (n - 1)) / n;
   const todayD = selectedMonth === currentYM() ? new Date().getDate() : -1;
   const bars = daily.map((v, i) => {
@@ -875,18 +904,28 @@ function fmtD(s) {
   return `${+m[3]} ${mon}${m[1] === String(new Date().getFullYear()) ? "" : " " + m[1]}`;
 }
 
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtYM = (ym) => `${MONTHS[+ym.slice(5, 7) - 1]} ${ym.slice(0, 4)}`;
+function syncSeg(id) { document.querySelectorAll(`[data-seg="${id}"] button`).forEach(b => { const on = b.dataset.v === $(id).value; b.classList.toggle("active", on); b.setAttribute("aria-pressed", on); }); }
+function dueHint(due, today) {
+  const days = Math.round((Date.parse(due) - Date.parse(today)) / 86400000);
+  if (days < 0) return `<span class="late">${-days}d late</span>`;
+  return days === 0 ? "Today" : days <= 14 ? `in ${days}d` : "";
+}
+
 function renderMonthSelect() {
   const months = new Set([currentYM(), selectedMonth]);
   state.transactions.forEach(t => { if (t.date) months.add(t.date.slice(0, 7)); });
   state.planned.forEach(p => { if (p.dueDate) months.add(p.dueDate.slice(0, 7)); });
-  $("monthSelect").innerHTML = Array.from(months).sort().reverse().map(m => `<option value="${m}" ${m === selectedMonth ? "selected" : ""}>${m}</option>`).join("");
+  $("monthSelect").innerHTML = Array.from(months).sort().reverse().map(m => `<option value="${m}" ${m === selectedMonth ? "selected" : ""}>${fmtYM(m)}</option>`).join("");
 }
 function renderCategoriesForType() {
-  const type = $("txType").value;
+  const type = $("txType").value; syncSeg("txType");
   $("txCategory").innerHTML = (type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join("");
   $("workToggleWrap").classList.toggle("hidden", type === "income");
 }
 function renderEditCategoriesForType(type, cur) {
+  syncSeg("editTxType");
   $("editTxCategory").innerHTML = (type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(c => `<option value="${escapeHtml(c)}" ${c === cur ? "selected" : ""}>${c}</option>`).join("");
   $("editWorkToggleWrap").classList.toggle("hidden", type === "income");
 }
@@ -900,7 +939,7 @@ function renderDashboard() {
   const totalCash = computeTotalCash(state);
   setMoney("dashExpense", m.expense);
   setMoney("dashInitialFund", Number(state.initialFund) || 0);
-  $("dashTotalCash").className = "stat-val " + (totalCash >= 0 ? "green" : "red");
+  $("dashTotalCash").className = "stat-val" + (totalCash >= 0 ? "" : " red");
   setMoney("dashTotalCash", totalCash);
   setMoney("dashIncome", m.income);
   $("dashNet").className = "stat-val " + (m.net >= 0 ? "green" : "red");
@@ -912,27 +951,31 @@ function renderDashboard() {
   }
   renderSpark(daily);
 
-  const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth);
-  if (pct > 0) { badge.className = "mom-badge mom-up"; badge.textContent = `▲ +${pct.toFixed(2)}% vs ${pm}`; }
-  else if (pct < 0) { badge.className = "mom-badge mom-down"; badge.textContent = `▼ ${pct.toFixed(2)}% vs ${pm}`; }
-  else { badge.className = "mom-badge mom-flat"; badge.textContent = `0.00% vs ${pm}`; }
+  const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth), pmName = fmtYM(pm);
+  const hasPrev = state.transactions.some(t => t.type === "expense" && (t.date || "").slice(0, 7) === pm);
+  if (!hasPrev) { badge.className = "mom-badge mom-flat"; badge.textContent = `No spending in ${pmName} to compare`; }
+  else if (pct > 0) { badge.className = "mom-badge mom-up"; badge.textContent = `▲ +${pct.toFixed(2)}% vs ${pmName}`; }
+  else if (pct < 0) { badge.className = "mom-badge mom-down"; badge.textContent = `▼ ${pct.toFixed(2)}% vs ${pmName}`; }
+  else { badge.className = "mom-badge mom-flat"; badge.textContent = `0.00% vs ${pmName}`; }
 
   const plannedEl = $("plannedList"), today = todayISO();
+  const due = state.planned.filter(p => !p.paid);
+  $("plannedSummary").textContent = due.length ? `${due.length} unpaid · ${formatRM(due.reduce((n, p) => n + Number(p.amount), 0))}` : "";
   if (!state.planned.length) {
     plannedEl.innerHTML = `<div class="empty">No planned outlays yet.</div>`;
   } else {
     const sorted = state.planned.slice().sort((a, b) => (Number(!!a.paid) - Number(!!b.paid)) || String(a.dueDate).localeCompare(String(b.dueDate)));
     plannedEl.innerHTML = sorted.map(p => `
-      <div class="row">
+      <div class="row${p.paid ? " is-done" : ""}">
         <div class="row-head">
           <div class="row-title">${escapeHtml(p.title)}${p.work ? `<span class="tag-work">Work</span>` : ""}${p.paid ? `<span class="tag-paid">Paid</span>` : (p.dueDate < today ? `<span class="tag-over">Overdue</span>` : "")}</div>
           <div class="row-amt">${formatRM(Number(p.amount))}</div>
         </div>
-        <div class="row-meta">Due ${fmtD(p.dueDate)} · ${escapeHtml(p.category)}</div>
+        <div class="row-meta">Due ${fmtD(p.dueDate)}${!p.paid && dueHint(p.dueDate, today) ? " · " + dueHint(p.dueDate, today) : ""}<br>${escapeHtml(p.category)}</div>
         <div class="row-actions">
-          ${p.paid ? "" : `<button class="btn btn-glow btn-sm" title="Mark as paid and log as expense" onclick="handlePayPlanned('${p.id}')">Paid</button>`}
+          ${p.paid ? "" : `<button class="btn btn-tint btn-sm" title="Mark as paid and log as expense" onclick="handlePayPlanned('${p.id}')">Paid</button>`}
           <button class="btn btn-ghost btn-sm" onclick="openEditPlanned('${p.id}')">Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="deletePlanned('${p.id}')">✕</button>
+          <button class="btn btn-ghost btn-sm btn-icon" aria-label="Delete plan" onclick="deletePlanned('${p.id}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
         </div>
       </div>`).join("");
   }
@@ -940,10 +983,10 @@ function renderDashboard() {
   const catEl = $("categoryBreakdown");
   const entries = Object.entries(m.byCategory).sort((a, b) => b[1] - a[1]);
   catEl.innerHTML = !entries.length
-    ? `<div class="empty">No expense entries for ${selectedMonth}.</div>`
+    ? `<div class="empty">No expense entries for ${fmtYM(selectedMonth)}.</div>`
     : entries.map(([cat, amt]) => {
         const share = m.expense > 0 ? Math.min(100, (amt / m.expense) * 100) : 0;
-        return `<div class="cat-row"><div class="cat-meta"><span>${escapeHtml(cat)}</span><span>${formatRM(amt)} (${share.toFixed(2)}%)</span></div><div class="progress-track"><div class="progress-fill" style="width:${share.toFixed(2)}%;"></div></div></div>`;
+        return `<div class="cat-row"><div class="cat-meta"><span>${escapeHtml(cat)}</span><b>${formatRM(amt)} <span class="muted">${share.toFixed(1)}%</span></b></div><div class="progress-track"><div class="progress-fill" style="width:${share.toFixed(2)}%;"></div></div></div>`;
       }).join("");
 }
 
@@ -970,12 +1013,12 @@ window.usePreset = (id) => {
 window.clearLedgerFilters = () => {
   ledgerFilter = "all"; ledgerQuery = ""; ledgerCat = ""; ledgerAll = false;
   $("ledgerSearch").value = ""; $("ledgerCat").value = ""; $("ledgerScope").value = "month";
-  document.querySelectorAll(".chip[data-filter]").forEach(c => c.classList.toggle("active", c.dataset.filter === "all"));
+  document.querySelectorAll("[data-filter]").forEach(c => c.classList.toggle("active", c.dataset.filter === "all"));
   renderLedger();
 };
 
 function renderLedger() {
-  $("ledgerScope").options[0].textContent = selectedMonth;
+  $("ledgerScope").options[0].textContent = fmtYM(selectedMonth);
   const r = filterLedger(state, { month: selectedMonth, all: ledgerAll, filter: ledgerFilter, cat: ledgerCat, q: ledgerQuery });
   const n = r.items.length, active = ledgerQuery || ledgerCat || ledgerAll || ledgerFilter !== "all";
   const net = r.income - r.expense;
@@ -984,24 +1027,32 @@ function renderLedger() {
   else if (ledgerFilter === "expense" || ledgerFilter === "work") main = `<span class="sum-val">Total out -${formatRM(r.expense)}</span>`;
   else main = `<span class="sum-val ${net >= 0 ? "green" : "red"}">Net ${net >= 0 ? "+" : "-"}${formatRM(Math.abs(net))}</span>`;
   $("txSummary").innerHTML = `<div class="sum"><div>${main}<div class="meta">${n} ${n === 1 ? "entry" : "entries"} · In ${formatRM(r.income)} · Out ${formatRM(r.expense)}</div></div>${active ? `<button type="button" class="btn btn-ghost btn-sm" onclick="clearLedgerFilters()">Clear</button>` : ""}</div>`;
-  $("txList").innerHTML = !n
-    ? `<div class="empty">No matching entries.</div>`
-    : r.items.map(t => `
+  const days = new Map();
+  for (const t of r.items) { if (!days.has(t.date)) days.set(t.date, []); days.get(t.date).push(t); }
+  const txRow = (t) => `
       <div class="row">
         <div class="row-head">
           <div class="row-title">${escapeHtml(t.note || t.category)}${t.work ? `<span class="tag-work">Work</span>` : ""}</div>
           <div class="row-amt ${t.type === "income" ? "green" : ""}">${t.type === "income" ? "+" : "-"}${formatRM(Number(t.amount))}</div>
         </div>
-        <div class="row-meta">${fmtD(t.date)} · ${escapeHtml(t.category)}</div>
+        <div class="row-meta">${escapeHtml(t.category)}</div>
         <div class="row-actions">
           <button type="button" class="btn btn-ghost btn-sm" onclick="openEditTx('${t.id}')">Edit</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="deleteTx('${t.id}')">✕</button>
+          <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Delete entry" onclick="deleteTx('${t.id}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
         </div>
-      </div>`).join("");
+      </div>`;
+  $("txList").innerHTML = !n
+    ? `<div class="empty">No matching entries.</div>`
+    : Array.from(days, ([date, list]) => {
+        const total = list.reduce((x, t) => x + (t.type === "income" ? 1 : -1) * Number(t.amount), 0);
+        return `<div class="day-head"><span>${fmtD(date)}</span><span>${total >= 0 ? "+" : "-"}${formatRM(Math.abs(total))}</span></div><div class="day-group">${list.map(txRow).join("")}</div>`;
+      }).join("");
 }
 
 function renderRecurring() {
   const el = $("recurringList");
+  const live = state.recurring.filter(r => !(r.totalTerms > 0 && r.doneTerms >= r.totalTerms));
+  $("recSummary").textContent = live.length ? `${live.length} active · ${formatRM(live.reduce((n, r) => n + Number(r.amount), 0))} per term` : "";
   if (!state.recurring.length) { el.innerHTML = `<div class="empty">No recurring rules yet.</div>`; return; }
   el.innerHTML = state.recurring.map(r => {
     const total = Math.max(0, Number(r.totalTerms) || 0), done = Math.max(0, Number(r.doneTerms) || 0);
@@ -1009,17 +1060,17 @@ function renderRecurring() {
     const pct = hasTerms ? Math.min(100, (done / total) * 100) : 100;
     const finished = hasTerms && done >= total;
     return `
-      <div class="row">
+      <div class="row${finished ? " is-done" : ""}">
         <div class="row-head">
           <div class="row-title">${escapeHtml(r.title)}${r.work ? `<span class="tag-work">Work</span>` : ""}</div>
           <div class="row-amt">${formatRM(Number(r.amount))}</div>
         </div>
-        <div class="row-meta">${escapeHtml(r.category)} · ${hasTerms ? `Done ${done}/${total} (${left} left)` : `Open-ended (${done} logged)`}</div>
+        <div class="row-meta">${hasTerms ? `Done ${done}/${total} (${left} left)` : `Open-ended (${done} logged)`}<br>${escapeHtml(r.category)}</div>
         ${hasTerms ? `<div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>` : ""}
         <div class="row-actions">
-          <button class="btn ${finished ? "btn-ghost" : "btn-glow"} btn-sm grow" ${finished ? "disabled" : ""} onclick="handleLogTerm('${r.id}')">${finished ? "Completed" : "Log 1 Term"}</button>
+          <button class="btn ${finished ? "btn-ghost" : "btn-tint"} btn-sm" ${finished ? "disabled" : ""} onclick="handleLogTerm('${r.id}')">${finished ? "Completed" : "Log 1 Term"}</button>
           <button class="btn btn-ghost btn-sm" onclick="openEditRecurring('${r.id}')">Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="deleteRecurring('${r.id}')">✕</button>
+          <button class="btn btn-ghost btn-sm btn-icon" aria-label="Delete rule" onclick="deleteRecurring('${r.id}')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
         </div>
       </div>`;
   }).join("");
@@ -1062,7 +1113,7 @@ window.handlePayPlanned = (id) => {
   const i = state.planned.findIndex(p => p.id === id);
   if (i === -1 || state.planned[i].paid) return;
   const { updatedPlanned, createdTx } = markPlannedPaid(state.planned[i]);
-  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll();
+  state.planned[i] = updatedPlanned; state.transactions.push(createdTx); renderAll(); toast(`Paid & logged · ${formatRM(createdTx.amount)}`);
 };
 function openPlannedForm(p) {
   $("plId").value = p ? p.id : "";
@@ -1085,7 +1136,7 @@ window.handleLogTerm = (id) => {
   const i = state.recurring.findIndex(r => r.id === id); if (i === -1) return;
   const { updatedRule, createdTx, completed } = applyRecurringTermStep(state.recurring[i]);
   if (completed || !createdTx) return;
-  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll();
+  state.recurring[i] = updatedRule; state.transactions.push(createdTx); renderAll(); toast(`Logged: ${createdTx.note}`);
 };
 function openRecForm(r) {
   $("recId").value = r ? r.id : "";
@@ -1108,7 +1159,7 @@ window.deleteRecurring = (id) => {
 
 function switchTab(tab) {
   ["dashboard", "log", "ledger", "recurring"].forEach(n => $("tab-" + n).classList.toggle("hidden", n !== tab));
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".nav-btn").forEach(b => { const on = b.dataset.tab === tab; b.classList.toggle("active", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("fabAddBtn").classList.toggle("hidden", tab === "log");
   window.scrollTo(0, 0); placeNavPill(); buzz(6);
 }
@@ -1172,6 +1223,10 @@ $("inlineEditFundBtn").addEventListener("click", openSettingsAndFocusFund);
 $("openSettingsBtn").addEventListener("click", openSettings);
 $("monthSelect").addEventListener("change", (e) => { selectedMonth = e.target.value; renderAll(); });
 $("txType").addEventListener("change", renderCategoriesForType);
+document.querySelectorAll("[data-seg] button").forEach(b => b.addEventListener("click", () => {
+  const sel = $(b.parentElement.dataset.seg); if (sel.value === b.dataset.v) return;
+  sel.value = b.dataset.v; sel.dispatchEvent(new Event("change")); buzz(6);
+}));
 
 $("txForm").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -1180,7 +1235,7 @@ $("txForm").addEventListener("submit", (e) => {
   const type = $("txType").value, date = $("txDate").value || todayISO();
   state.transactions.push({ id: uid("tx"), type, amount, category: $("txCategory").value, date, note: $("txNote").value.trim(), work: type === "expense" && $("txWork").checked });
   selectedMonth = date.slice(0, 7);
-  e.target.reset(); $("txDate").value = todayISO(); renderCategoriesForType(); renderAll(); switchTab("dashboard");
+  e.target.reset(); $("txDate").value = todayISO(); renderCategoriesForType(); renderAll(); switchTab("dashboard"); toast(`Saved · ${formatRM(amount)}`);
 });
 
 $("editTxType").addEventListener("change", (e) => renderEditCategoriesForType(e.target.value, $("editTxCategory").value));
@@ -1196,8 +1251,8 @@ $("editTxForm").addEventListener("submit", (e) => {
   $("editTxModal").classList.remove("open"); renderAll();
 });
 
-document.querySelectorAll(".chip[data-filter]").forEach(chip => chip.addEventListener("click", () => {
-  document.querySelectorAll(".chip[data-filter]").forEach(c => c.classList.remove("active"));
+document.querySelectorAll("[data-filter]").forEach(chip => chip.addEventListener("click", () => {
+  document.querySelectorAll("[data-filter]").forEach(c => c.classList.remove("active"));
   chip.classList.add("active"); ledgerFilter = chip.dataset.filter; renderLedger();
 }));
 
