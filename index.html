@@ -375,7 +375,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 .pie-seg.sel{stroke-width:5.8}
 .pie-sweep{stroke-dashoffset:100;animation:pieSweep 1s cubic-bezier(.22,1,.36,1) .12s forwards}
 @keyframes pieSweep{to{stroke-dashoffset:0}}
-.pie-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 20px;text-align:center;pointer-events:none}
+.pie-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 20px;text-align:center;pointer-events:none}
 .pie-mid span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text-muted)}
 .pie-mid b{white-space:nowrap;font-size:15px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
 .pie-leg{flex:1 1 auto;min-width:0;max-width:280px;display:grid;gap:2px}
@@ -1643,12 +1643,23 @@ function tweenText(el, to, ms) {
   const t0 = performance.now(), step = (t) => { const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(p < 1 ? from + (to - from) * e : to); if (p < 1) el._r = requestAnimationFrame(step); };
   el._r = requestAnimationFrame(step);
 }
+function fitPieLabel(el, text) {  // centre caption: shrink, then drop the "& …" part, so long names never crowd the hole
+  _pieCtx = _pieCtx || document.createElement("canvas").getContext("2d");
+  const wrap = el.closest(".pie-wrap"), W = (wrap && wrap.clientWidth) || 148, maxW = W * 0.44, base = 11, fam = getComputedStyle(el).fontFamily;
+  const w = (str) => { _pieCtx.font = `400 ${base}px ${fam}`; return _pieCtx.measureText(str).width * 1.04; };
+  const fit = (str) => base * maxW / w(str);
+  let t = text, size = fit(t);
+  if (size < 10.5 && /&/.test(t)) { t = t.split(/\s*&\s*/)[0]; size = fit(t); }      // "Food & Beverage" -> "Food"
+  if (size < 10.5 && /\s/.test(t)) { t = t.split(/\s+/)[0]; size = fit(t); }          // "Professional Services" -> "Professional"
+  el.textContent = t; el.title = text;
+  el.style.fontSize = Math.max(9.5, Math.min(base, size)).toFixed(1) + "px";
+}
 function syncPie(first) {         // selection state only: no re-render, so slices ease between states
   const el = $("ledgerPie"), { rows, total } = pieData, cat = ledgerCat, hit = rows.find(r => r[0] === cat);
   el.querySelectorAll(".pie-seg").forEach(c => { const on = c.dataset.pie === cat; c.classList.toggle("sel", !!cat && on); c.classList.toggle("dim", !!cat && !on); });
   el.querySelectorAll(".pie-leg button").forEach(b => { const on = b.dataset.pie === cat; b.classList.toggle("on", !!cat && on); b.classList.toggle("dim", !!cat && !on); b.setAttribute("aria-pressed", String(!!cat && on)); });
   const lab = $("pieLabel"), tot = $("pieTotal"); if (!lab || !tot) return;
-  lab.textContent = hit ? hit[0] : (ledgerAll ? "All time" : fmtYM(selectedMonth));
+  fitPieLabel(lab, hit ? hit[0] : (ledgerAll ? "All time" : fmtYM(selectedMonth)));
   tweenText(tot, hit ? hit[1] : total, first ? 950 : 380);
 }
 function renderLedgerPie() {      // expenses by category for the chosen period (ignores search / type filters)
