@@ -364,6 +364,20 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
 @keyframes pillStretch{0%{transform:scale(1,1)}35%{transform:scale(1.24,.84)}70%{transform:scale(.95,1.04)}100%{transform:scale(1,1)}}
 .fab-glow:active{transform:scale(.92)}
 @media (prefers-reduced-motion:reduce){#appSplash,.splash-logo,.splash-logo::before,.splash-word .col,.splash-logo svg .plus,.app.boot-anim>header,.app.boot-anim .card,section .card,.nav-pill,.nav-pill::before,.calc-sheet{animation:none !important;transition:none !important}}
+
+.pie-card{display:flex;gap:16px;align-items:center;margin:12px 0}
+.pie-wrap{position:relative;width:148px;height:148px;flex-shrink:0}
+.pie-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.pie-wrap circle{fill:none;stroke-width:6.5;transition:opacity .2s}
+.pie-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.pie-mid b{font-size:15px}.pie-mid span{font-size:11px;color:var(--text-muted)}
+.pie-leg{flex:1;min-width:0;display:grid;gap:6px}
+.pie-leg button{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;color:inherit;font:inherit;font-size:12.5px;padding:3px 0;text-align:left;cursor:pointer;min-width:0}
+.pie-leg i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pie-leg .pl{display:flex;flex-direction:column;min-width:0;flex:1}.pie-leg em{font-style:normal;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pie-leg small{color:var(--text-muted);font-size:11.5px;white-space:nowrap}
+.pie-leg button.on{font-weight:700}
+@media(max-width:360px){.pie-card{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -403,7 +417,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <div class="card">
       <div id="dashAvailable"></div>
       <div class="stats-grid">
-        <div class="stat-box"><div class="label-muted">Total Cash</div><div class="stat-val" id="dashTotalCash">RM 0.00</div></div>
+        <div class="stat-box"><div class="label-muted">Total Cash</div><div class="stat-val" id="dashTotalCash">RM 0.00</div><div class="meta" id="dashSavedNote"></div></div>
         <div class="stat-box"><div class="label-muted">Monthly Net</div><div class="stat-val" id="dashNet">RM 0.00</div></div>
         <div class="stat-box"><div class="label-muted">Monthly Income</div><div class="stat-val" id="dashIncome">RM 0.00</div></div>
         <button type="button" class="stat-box stat-btn" id="inlineEditFundBtn"><div class="label-muted">Initial Fund <span class="fund-edit-hint">Edit ›</span></div><div class="stat-val" id="dashInitialFund">RM 0.00</div></button>
@@ -455,6 +469,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
         <button type="button" data-filter="work">Work Only</button>
       </div>
     </div>
+    <div id="ledgerPie"></div>
     <div id="txSummary"></div>
     <div id="txList"></div>
   </section>
@@ -554,6 +569,8 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
   <div class="section-title"><span id="gdTitle"></span><span style="display:flex;gap:8px"><button type="button" class="btn btn-sm btn-ghost" id="gdEdit">Edit</button><button type="button" class="btn btn-sm close" id="closeGoalDetail" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
   <div class="form-grid">
     <div class="goal-summary" id="gdSummary"></div>
+    <div class="label-muted" id="gdCash" style="margin-bottom:6px"></div>
+    <div id="gdQuick" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
     <input type="text" class="calc" readonly inputmode="none" autocomplete="off" id="gdAmount" data-label="Amount (RM)" placeholder="Amount (RM)" aria-label="Amount" />
     <div class="row-2"><button type="button" class="btn btn-ghost" id="gdTake">Take out</button><button type="button" class="btn btn-glow" id="gdAdd">Add money</button></div>
     <p class="note" style="margin:0;text-align:center">This only sets money aside. It is not logged as an expense.</p>
@@ -1115,6 +1132,8 @@ function endYM(r, thisMonthLogged, ym) {
 /* ---------- Saving goals (money set aside; never creates a transaction) ---------- */
 const goalSaved = (g) => sumBy(g.history, h => h.amount);
 const totalSaved = (data) => sumBy(data.goals || [], goalSaved);
+// cash you can really spend: ledger cash minus money parked in goals (Take out gives it back)
+const computeFreeCash = (data) => Math.round((computeTotalCash(data) - totalSaved(data)) * 100) / 100;
 function goalPlan(g, today) {
   const saved = goalSaved(g), left = Math.max(0, Math.round((g.target - saved) * 100) / 100);
   const pct = Math.max(0, Math.min(100, saved / g.target * 100)), days = Math.round((Date.parse(g.date) - Date.parse(today)) / 86400000);
@@ -1131,11 +1150,11 @@ function syncGoalReached(g, today) {
 }
 // cash on hand minus what is still due by the end of this month (includes overdue plans)
 function computeAvailable(data, ym) {
-  const cash = computeTotalCash(data);
+  const cash = computeFreeCash(data);
   const plans = sumBy(data.planned.filter(p => !p.paid && p.dueDate.slice(0, 7) <= ym), p => p.amount);
   const terms = computeRecurringSummary(data, ym).pending;
   const goals = totalSaved(data);
-  return { cash, plans, terms, goals, available: Math.round((cash - plans - terms - goals) * 100) / 100 };
+  return { cash, plans, terms, goals, available: Math.round((cash - plans - terms) * 100) / 100 };   // goals already left cash, don't deduct twice
 }
 
 /* ---------- Backup tracking (stored separately from ledger data) ---------- */
@@ -1268,7 +1287,7 @@ function paceText(g, p) {
 }
 function renderGoals() {
   const today = todayISO(), goals = state.goals.slice().sort((a, b) => Number(!!a.reachedDate) - Number(!!b.reachedDate) || a.date.localeCompare(b.date));
-  $("goalSummary").textContent = goals.length ? `${formatRM(totalSaved(state))} set aside` : "";
+  $("goalSummary").textContent = goals.length ? `${formatRM(totalSaved(state))} kept out of Total Cash` : "";
   $("goalList").innerHTML = !goals.length ? `<div class="goal-empty label-muted">Saving for something? Set a target and a date,<br>and see how much to put aside.</div>` : goals.map(g => {
     const p = goalPlan(g, today);
     return `<div class="goal">
@@ -1290,6 +1309,12 @@ function renderGoalDetail() {
   $("gdTitle").textContent = g.name;
   $("gdSummary").innerHTML = `<div class="ring big" style="--p:${p.pct.toFixed(2)}"><i>${Math.floor(p.pct)}%</i></div>
     <div class="stat-val">${formatRM(p.saved)}</div><div class="label-muted">of ${formatRM(g.target)} · by ${fmtD(g.date)}</div><div class="label-muted">${paceText(g, p)}</div>`;
+  const free = computeFreeCash(state), quick = [];
+  $("gdCash").textContent = free >= 0 ? `Total Cash now: ${formatRM(free)}` : `Total Cash is ${formatRM(free)} · log income to cover it`;
+  if (p.perMonth) quick.push([`Monthly ${formatRM(p.perMonth)}`, p.perMonth]);
+  if (p.left > 0) quick.push([`Fill to target ${formatRM(p.left)}`, p.left]);
+  if (p.saved > 0) quick.push([`Take out all ${formatRM(p.saved)}`, p.saved]);
+  $("gdQuick").innerHTML = quick.map(([l, v]) => `<button type="button" class="chip" onclick="$('gdAmount').value='${v.toFixed(2)}'">${l}</button>`).join("");
   $("gdHistory").innerHTML = !g.history.length ? "" : `<div class="label-muted" style="margin-bottom:6px">History</div><div class="hist">${g.history.slice().reverse().map(h => `<div class="line"><span>${fmtD(h.date)}</span><div><b class="${h.amount > 0 ? "green" : ""}">${h.amount > 0 ? "+" : "−"}${formatRM(Math.abs(h.amount))}</b><button type="button" aria-label="Remove this record" onclick="removeGoalRecord('${h.id}')"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>`).join("")}</div>`;
 }
 window.openGoal = (id) => { $("toast").classList.remove("show", "has-action"); activeGoal = id; $("gdAmount").value = ""; renderGoalDetail(); $("goalDetailModal").classList.add("open"); };
@@ -1323,7 +1348,8 @@ function moveGoalMoney(sign) {
   const reached = syncGoalReached(g, todayISO());
   $("gdAmount").value = ""; $("goalDetailModal").classList.remove("open"); renderAll();
   if (reached) { celebrate(g); return; }
-  toast(sign > 0 ? `Saved to ${g.name} · ${formatRM(amount)}` : `Took out ${formatRM(amount)}`, () => {
+  const short = sign > 0 && computeFreeCash(state) < 0;
+  toast(sign > 0 ? `Saved to ${g.name} · ${formatRM(amount)} out of Total Cash${short ? " (now negative, add income or Initial Fund)" : ""}` : `Took out ${formatRM(amount)} · back in Total Cash`, () => {
     const x = findGoal(goalRef); if (!x || !x.history.some(h => h.id === rec.id)) return;
     const rest = x.history.filter(h => h.id !== rec.id);
     if (sumBy(rest, h => h.amount) < 0) { toast("Can’t undo: later withdrawals use this money"); return; }
@@ -1467,7 +1493,8 @@ function renderStaticCategorySelects() {
 function renderDashboard() {
   const m = computeMonthMetrics(state, selectedMonth);
   $("spentLabel").textContent = `Spent in ${fmtYM(selectedMonth)}`;
-  const totalCash = computeTotalCash(state);
+  const totalCash = computeFreeCash(state), parked = totalSaved(state);
+  $("dashSavedNote").textContent = parked ? `excl. ${formatRM(parked)} in goals` : "";
   setMoney("dashExpense", m.expense);
   setMoney("dashInitialFund", Number(state.initialFund) || 0);
   $("dashTotalCash").className = "stat-val" + (totalCash >= 0 ? "" : " red");
@@ -1496,11 +1523,11 @@ function renderDashboard() {
   if (!isNow) $("dashAvailable").innerHTML = "";
   else {
     const av = computeAvailable(state, selectedMonth), wasOpen = Boolean($("dashAvailable").querySelector("details[open]"));
-    $("dashAvailable").innerHTML = `<details class="avail"${wasOpen ? " open" : ""}><summary><span>Available after dues<small>Cash minus dues and savings · tap for details</small></span><b class="${av.available < 0 ? "red" : ""}">${formatRM(av.available)}</b></summary>
-      <div class="line"><span>Total Cash</span><b>${formatRM(av.cash)}</b></div>
+    $("dashAvailable").innerHTML = `<details class="avail"${wasOpen ? " open" : ""}><summary><span>Available after dues<small>Cash minus unpaid dues · tap for details</small></span><b class="${av.available < 0 ? "red" : ""}">${formatRM(av.available)}</b></summary>
+      <div class="line"><span>Total Cash (goals already excluded)</span><b>${formatRM(av.cash)}</b></div>
       <div class="line"><span>Unpaid plans (to month end)</span><b>− ${formatRM(av.plans)}</b></div>
       <div class="line"><span>Recurring not logged</span><b>− ${formatRM(av.terms)}</b></div>
-      ${av.goals ? `<div class="line"><span>Set aside for goals</span><b>− ${formatRM(av.goals)}</b></div>` : ""}</details>`;
+      ${av.goals ? `<div class="line"><span class="label-muted">Kept apart in goals</span><b class="label-muted">${formatRM(av.goals)}</b></div>` : ""}</details>`;
   }
 
   const badge = $("momBadge"), pct = m.momPct, pm = prevYM(selectedMonth), pmName = fmtYM(pm);
@@ -1573,7 +1600,29 @@ window.clearLedgerFilters = () => {
   renderLedger();
 };
 
+const PIE_COLORS = ["#4CC9FF", "#FFB547", "#A9FF3B", "#ff6b61", "#B084FF", "#FF8AD8", "#3DDBB5", "#8f99a8"];
+function renderLedgerPie() {      // expenses by category for the chosen period (ignores search / type filters)
+  const el = $("ledgerPie"), by = {};
+  let total = 0;
+  for (const t of state.transactions) {
+    if (t.type !== "expense" || (!ledgerAll && (t.date || "").slice(0, 7) !== selectedMonth)) continue;
+    const a = Number(t.amount) || 0; if (a <= 0) continue;
+    by[t.category] = (by[t.category] || 0) + a; total += a;
+  }
+  let rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  if (!rows.length) { el.innerHTML = ""; return; }
+  if (rows.length > 8) { const rest = rows.slice(7).reduce((n, r) => n + r[1], 0); rows = [...rows.slice(0, 7), ["Others", rest]]; }
+  let acc = 0;
+  const segs = rows.map(([cat, amt], i) => {
+    const pct = amt / total * 100, gap = rows.length > 1 ? Math.min(.8, pct / 2) : 0;
+    const c = `<circle cx="21" cy="21" r="15.9155" stroke="${PIE_COLORS[i]}" stroke-dasharray="${Math.max(0, pct - gap).toFixed(3)} ${(100 - Math.max(0, pct - gap)).toFixed(3)}" stroke-dashoffset="${(-acc).toFixed(3)}"${ledgerCat && ledgerCat !== cat ? ' opacity=".25"' : ""}/>`;
+    acc += pct; return c;
+  }).join("");
+  const legend = rows.map(([cat, amt], i) => `<button type="button" class="${ledgerCat === cat ? "on" : ""}" data-pie="${escapeHtml(cat)}"><i style="background:${PIE_COLORS[i]}"></i><span class="pl"><em>${escapeHtml(cat)}</em><small>${(amt / total * 100).toFixed(1)}% · ${formatRM(amt)}</small></span></button>`).join("");
+  el.innerHTML = `<div class="card pie-card"><div class="pie-wrap"><svg viewBox="0 0 42 42" role="img" aria-label="Expenses by category">${segs}</svg><div class="pie-mid"><span>${ledgerAll ? "All time" : fmtYM(selectedMonth)}</span><b>${formatRM(total)}</b></div></div><div class="pie-leg">${legend}</div></div>`;
+}
 function renderLedger() {
+  renderLedgerPie();
   $("ledgerScope").options[0].textContent = fmtYM(selectedMonth);
   const r = filterLedger(state, { month: selectedMonth, all: ledgerAll, filter: ledgerFilter, cat: ledgerCat, q: ledgerQuery });
   const n = r.items.length, active = ledgerQuery || ledgerCat || ledgerAll || ledgerFilter !== "all";
@@ -1820,6 +1869,10 @@ function runSelfTest() {
   gl.history.push({ amount: 900, date: "2026-03-01" });
   t(syncGoalReached(gl, "2026-03-01") === true && syncGoalReached(gl, "2026-03-02") === false && gl.reachedDate === "2026-03-01", "Goal celebrates only when it first reaches target");
   t(computeAvailable({ initialFund: 1000, transactions: [], planned: [], recurring: [], goals: [{ history: [{ amount: 300 }] }] }, "2026-05").available === 700, "Savings are set aside from available");
+  const fc = { initialFund: 5000, transactions: [], planned: [], recurring: [], goals: [{ history: [{ amount: 2500 }] }] };
+  t(computeFreeCash(fc) === 2500 && computeTotalCash(fc) === 5000, "Saving 2,500 of 5,000 leaves 2,500 Total Cash");
+  fc.goals[0].history.push({ amount: -1000 });
+  t(computeFreeCash(fc) === 3500 && computeAvailable(fc, "2026-05").available === 3500, "Take out returns cash; no double deduction");
   const nb = normalizeState({ transactions: [], name: "  Mei  ", goals: [gl, { name: "bad" }] });
   t(nb.data.name === "Mei" && nb.data.goals.length === 1 && normalizeState({ transactions: [] }).data.goals.length === 0, "Name & goals survive backup; old backups still work");
   t(Object.keys(THEMES).length === 3 && Object.values(THEMES).every(x => /^#[0-9A-Fa-f]{6}$/.test(x.accent) && x.rgb.split(",").length === 3), "Three themes defined with valid colours");
@@ -2003,6 +2056,12 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.q
 
 $("ledgerSearch").addEventListener("input", (e) => { ledgerQuery = e.target.value; renderLedger(); });
 $("ledgerScope").addEventListener("change", (e) => { ledgerAll = e.target.value === "all"; renderLedger(); });
+$("ledgerPie").addEventListener("click", (e) => {   // tap a legend row to filter the list by that category (tap again to clear)
+  const b = e.target.closest("[data-pie]"); if (!b) return;
+  const c = b.dataset.pie, known = [...EXPENSE_CATEGORIES].includes(c);
+  if (!known) return;
+  ledgerCat = ledgerCat === c ? "" : c; $("ledgerCat").value = ledgerCat; renderLedger();
+});
 $("ledgerCat").addEventListener("change", (e) => { ledgerCat = e.target.value; renderLedger(); });
 $("managePresetsBtn").addEventListener("click", () => { presetManage = !presetManage; renderPresets(); });
 $("savePresetBtn").addEventListener("click", () => {
