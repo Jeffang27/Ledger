@@ -8,9 +8,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Ledger" />
+<meta name="application-name" content="Ledger" />
+<link rel="manifest" href="manifest.json" />
 <title>Ledger · RM</title>
-<link id="faviconPng" rel="icon" type="image/png" sizes="180x180" href="" />
-<link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="" />
+<link id="faviconPng" rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+<link id="appleTouchIconPng" rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
 <script>try{var t=localStorage.getItem("ledger_theme");if(t==="ocean"||t==="amber")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
 /* ===== CALM LEDGER · 60 black canvas / 30 tinted surfaces / 10 accent · themes: Lime, Ocean, Amber ===== */
@@ -603,6 +605,7 @@ section .card:nth-of-type(4){animation-delay:130ms !important}
     <div><div class="row-3"><button type="button" class="btn btn-ghost btn-sm" id="exportJsonBtn">Export JSON</button><button type="button" class="btn btn-ghost btn-sm" id="exportCsvBtn">Export CSV</button><label class="btn btn-ghost btn-sm">Import<input type="file" id="importJsonInput" accept="application/json" class="hidden" /></label></div>
       <div class="note" id="lastBackupText"></div></div>
     <details class="advanced"><summary>Advanced</summary><div>
+      <div id="installBox" class="hidden"><button type="button" class="btn btn-glow btn-sm hidden" id="installBtn">Install app on this phone</button><div class="note" id="installNote"></div></div>
       <div class="row-2"><button type="button" class="btn btn-ghost btn-sm" id="saveIconBtn">Save Icon PNG</button><button type="button" class="btn btn-ghost btn-sm" id="runSelfTestBtn">Run Self-Test</button></div>
       <div id="selfTestOutputWrap" class="hidden"><div class="label-muted">Self-Test Report</div><pre id="selfTestOutput"></pre></div>
       <div class="label-muted">Apple Shortcuts URL Template</div><pre id="shortcutUrlBox"></pre>
@@ -1391,7 +1394,7 @@ function closeConfirm() { $("confirmModal").classList.remove("open"); confirmCb 
 
 /* ---------- Render ---------- */
 const fmtAmt = (n) => Number(n).toFixed(2);
-function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 8); } catch {} }
+function buzz(ms) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(ms || 8); } catch {} }
 function setMoney(id, val) {      // count-up animation for dashboard figures
   const el = $(id), from = el._v ?? 0; el._v = val;
   if (from === val || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) { el.textContent = formatRM(val); return; }
@@ -2086,6 +2089,22 @@ renderCategoriesForType();
 renderAll();
 initNavReels();
 placeNavPill();
+{ const tab = new URLSearchParams(location.search).get("tab"); if (["dashboard", "log", "ledger", "recurring"].includes(tab)) switchTab(tab); }
+/* ---------- PWA: offline shell + install (Android prompt, iOS hint) ---------- */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+let installEvt = null;
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+function renderInstall() {
+  const box = $("installBox"), btn = $("installBtn"), note = $("installNote"), ua = navigator.userAgent;
+  if (isStandalone()) { box.classList.add("hidden"); return; }
+  box.classList.remove("hidden"); btn.classList.toggle("hidden", !installEvt);
+  note.textContent = installEvt ? "" : /iPhone|iPad|iPod/.test(ua) ? "iPhone / iPad: open in Safari, tap Share, then Add to Home Screen."
+    : /Android/.test(ua) ? "Android: open the browser menu (⋮), then tap Install app or Add to Home screen." : "";
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; renderInstall(); });
+window.addEventListener("appinstalled", () => { installEvt = null; renderInstall(); });
+$("installBtn").addEventListener("click", async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch {} installEvt = null; renderInstall(); });
+renderInstall();
 $("soundToggle").checked = soundOn;
 $("soundToggle").addEventListener("change", (e) => {
   soundOn = e.target.checked; writeKey(SOUND_KEY, soundOn ? "on" : "off");
